@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,11 +16,33 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $users = [
+            [
+                'name' => 'BridgeBox Admin',
+                'email' => 'admin@bridgebox.local',
+                'role' => 'admin',
+            ],
+            [
+                'name' => 'BridgeBox Teacher',
+                'email' => 'teacher@bridgebox.local',
+                'role' => 'teacher',
+            ],
+            [
+                'name' => 'BridgeBox Student',
+                'email' => 'student@bridgebox.local',
+                'role' => 'student',
+            ],
+        ];
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        foreach ($users as $user) {
+            User::updateOrCreate(
+                ['email' => $user['email']],
+                [
+                    'name' => $user['name'],
+                    'role' => $user['role'],
+                    'password' => Hash::make('BridgeBox@123'),
+                ]
+            );
+        }
     }
 }

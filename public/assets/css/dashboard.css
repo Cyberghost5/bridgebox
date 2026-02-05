@@ -546,6 +546,31 @@ body::before {
     gap: 12px;
 }
 
+.table-scroll {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 420px;
+}
+
+.data-table th,
+.data-table td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid #eef2f7;
+}
+
+.data-table th {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
 .item {
     display: flex;
     align-items: center;
