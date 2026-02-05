@@ -11,9 +11,8 @@
         <aside class="sidebar">
             <div class="brand">
                 <div class="brand-mark">
-                    <img class="brand-logo" src="{{ asset('assets/images/favicon.png') }}" alt="BridgeBox logo">
-                    <!-- <span></span>
-                    <span></span> -->
+                    <span></span>
+                    <span></span>
                 </div>
                 <span class="brand-name">BridgeBox</span>
             </div>
@@ -43,7 +42,7 @@
             </div>
         </aside>
 
-        <main class="main">
+        <main class="main" data-refresh-url="{{ route('dashboard.admin.status') }}" data-refresh-interval="10000" data-auto-refresh="on">
             <header class="topbar">
                 <div class="greeting">
                     <p class="eyebrow">Admin Control Room</p>
@@ -58,6 +57,24 @@
                 </div>
             </header>
 
+            @php
+                $flashStatus = session('action_status');
+                $flashMessage = session('action_message');
+                $actionsBlocked = (!$actionsEnabled) || (!$sudoAllowed);
+            @endphp
+            <div id="action-alert" class="alert {{ $flashStatus === 'success' ? 'alert-success' : ($flashStatus === 'error' ? 'alert-error' : '') }}" role="status" aria-live="polite" @if (!$flashMessage) hidden @endif>
+                {{ $flashMessage }}
+            </div>
+            @if (!$actionsEnabled)
+                <div class="alert alert-warning">
+                    Admin actions are disabled. Set <code>ADMIN_ACTIONS_ENABLED=true</code> in <code>.env</code> to enable them.
+                </div>
+            @elseif (!$sudoAllowed)
+                <div class="alert alert-warning">
+                    Sudo actions are disabled. Configure sudoers and set <code>ADMIN_ACTIONS_ALLOW_SUDO=true</code> to allow system commands.
+                </div>
+            @endif
+
             <section class="quick-tabs">
                 <div class="tab" style="--accent: #4a7bd1; --d: 0.05s;">
                     <div class="tab-icon">
@@ -67,7 +84,7 @@
                     </div>
                     <div>
                         <p>Server Status</p>
-                        <span>{{ $status['server'] ?? 'Unknown' }}</span>
+                        <span data-status="server">{{ $status['server'] ?? 'Unknown' }}</span>
                     </div>
                 </div>
                 <div class="tab" style="--accent: #e56b6f; --d: 0.1s;">
@@ -80,7 +97,7 @@
                     </div>
                     <div>
                         <p>Hotspot Status</p>
-                        <span>{{ $status['hotspot'] ?? 'Unknown' }}</span>
+                        <span data-status="hotspot">{{ $status['hotspot'] ?? 'Unknown' }}</span>
                     </div>
                 </div>
                 <div class="tab" style="--accent: #f2b84b; --d: 0.15s;">
@@ -93,7 +110,7 @@
                     </div>
                     <div>
                         <p>Connected Devices</p>
-                        <span>{{ $status['devices'] ?? 'Unknown' }}</span>
+                        <span data-status="devices">{{ $status['devices'] ?? 'Unknown' }}</span>
                     </div>
                 </div>
                 <div class="tab" style="--accent: #56c1a7; --d: 0.2s;">
@@ -104,7 +121,7 @@
                     </div>
                     <div>
                         <p>App Health</p>
-                        <span>{{ $status['app_health'] ?? 'Unknown' }}</span>
+                        <span data-status="app_health">{{ $status['app_health'] ?? 'Unknown' }}</span>
                     </div>
                 </div>
                 <div class="tab" style="--accent: #5b8de3; --d: 0.25s;">
@@ -117,7 +134,7 @@
                     </div>
                     <div>
                         <p>Storage</p>
-                        <span>{{ $status['storage'] ?? 'Unknown' }}</span>
+                        <span data-status="storage">{{ $status['storage'] ?? 'Unknown' }}</span>
                     </div>
                 </div>
                 <div class="tab" style="--accent: #f08b5a; --d: 0.3s;">
@@ -131,7 +148,7 @@
                     </div>
                     <div>
                         <p>Power Health</p>
-                        <span>{{ $status['power'] ?? 'Unknown' }}</span>
+                        <span data-status="power">{{ $status['power'] ?? 'Unknown' }}</span>
                     </div>
                 </div>
                 <div class="tab" style="--accent: #3bb98d; --d: 0.35s;">
@@ -143,7 +160,7 @@
                     </div>
                     <div>
                         <p>Uptime</p>
-                        <span>{{ $status['uptime'] ?? 'Unknown' }}</span>
+                        <span data-status="uptime">{{ $status['uptime'] ?? 'Unknown' }}</span>
                     </div>
                 </div>
                 <div class="tab" style="--accent: #e45757; --d: 0.4s;">
@@ -157,7 +174,7 @@
                     </div>
                     <div>
                         <p>Last Update</p>
-                        <span>{{ $status['last_update'] ?? 'unknown' }}</span>
+                        <span data-status="last_update">{{ $status['last_update'] ?? 'unknown' }}</span>
                     </div>
                 </div>
             </section>
@@ -165,31 +182,39 @@
             <section class="panel">
                 <div class="panel-header">
                     <h4>Admin Controls</h4>
-                    <span class="badge gold">Placeholder</span>
+                    <span class="badge gold">Actions</span>
                 </div>
                 <div class="panel-body">
-                    <div class="item">
+                    <form class="item" data-admin-action data-confirm="Start the server services?" action="{{ route('dashboard.admin.actions', ['action' => 'start_server']) }}" method="post">
+                        @csrf
                         <div class="item-info">
                             <p>Start Server</p>
-                            <span>nginx + php-fpm + SQLite permissions</span>
+                            <span>nginx + php-fpm + SQLite permissions check</span>
                         </div>
-                        <button class="btn primary" type="button" disabled>Start</button>
-                    </div>
-                    <div class="item">
+                        <button class="btn primary" type="submit" @disabled($actionsBlocked)>Start</button>
+                    </form>
+                    <form class="item" data-admin-action data-confirm="Stop the server services?" action="{{ route('dashboard.admin.actions', ['action' => 'stop_server']) }}" method="post">
+                        @csrf
                         <div class="item-info">
                             <p>Stop Server</p>
                             <span>Gracefully stop services</span>
                         </div>
-                        <button class="btn ghost" type="button" disabled>Stop</button>
-                    </div>
+                        <button class="btn ghost" type="submit" @disabled($actionsBlocked)>Stop</button>
+                    </form>
                     <div class="item">
                         <div class="item-info">
                             <p>Hotspot Control</p>
                             <span>Turn hotspot on/off</span>
                         </div>
-                        <div class="actions">
-                            <button class="btn primary" type="button" disabled>On</button>
-                            <button class="btn ghost" type="button" disabled>Off</button>
+                        <div class="inline-actions">
+                            <form data-admin-action data-confirm="Turn hotspot on?" action="{{ route('dashboard.admin.actions', ['action' => 'hotspot_on']) }}" method="post">
+                                @csrf
+                                <button class="btn primary" type="submit" @disabled($actionsBlocked)>On</button>
+                            </form>
+                            <form data-admin-action data-confirm="Turn hotspot off?" action="{{ route('dashboard.admin.actions', ['action' => 'hotspot_off']) }}" method="post">
+                                @csrf
+                                <button class="btn ghost" type="submit" @disabled($actionsBlocked)>Off</button>
+                            </form>
                         </div>
                     </div>
                     <div class="item">
@@ -197,16 +222,73 @@
                             <p>Power Actions</p>
                             <span>Reboot or shutdown device</span>
                         </div>
-                        <div class="actions">
-                            <button class="btn primary" type="button" disabled>Reboot</button>
-                            <button class="btn ghost" type="button" disabled>Shutdown</button>
+                        <div class="inline-actions">
+                            <form data-admin-action data-confirm="Reboot the device now?" action="{{ route('dashboard.admin.actions', ['action' => 'reboot']) }}" method="post">
+                                @csrf
+                                <button class="btn primary" type="submit" @disabled($actionsBlocked)>Reboot</button>
+                            </form>
+                            <form data-admin-action data-confirm="Shutdown the device now?" action="{{ route('dashboard.admin.actions', ['action' => 'shutdown']) }}" method="post">
+                                @csrf
+                                <button class="btn ghost" type="submit" @disabled($actionsBlocked)>Shutdown</button>
+                            </form>
                         </div>
                     </div>
+                </div>
+            </section>
+
+            <section class="panel table-panel">
+                <div class="panel-header">
+                    <h4>Recent Admin Actions</h4>
+                    <span class="badge blue">Last 10</span>
+                </div>
+                <div class="panel-body table-scroll">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Admin</th>
+                                <th>Action</th>
+                                <th>Result</th>
+                                <th>Message</th>
+                            </tr>
+                        </thead>
+                        <tbody data-action-log-body>
+                            @forelse ($logs as $log)
+                                <tr>
+                                    <td>{{ $log->created_at->format('Y-m-d H:i') }}</td>
+                                    <td>{{ $log->user->name ?? 'Unknown' }}</td>
+                                    <td>{{ $log->action }}</td>
+                                    <td>{{ ucfirst($log->result) }}</td>
+                                    <td>{{ $log->message }}</td>
+                                </tr>
+                            @empty
+                                <tr data-action-log-empty>
+                                    <td colspan="5">No actions logged yet.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </section>
         </main>
     </div>
 
+    <div class="modal" id="confirm-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="confirm-title">Confirm Action</h3>
+                <button class="icon-close" type="button" data-confirm-close aria-label="Close dialog">×</button>
+            </div>
+            <p class="modal-message" data-confirm-message>Are you sure?</p>
+            <div class="modal-actions">
+                <button class="btn ghost" type="button" data-confirm-no>Cancel</button>
+                <button class="btn primary" type="button" data-confirm-yes>Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ asset('assets/js/admin-actions.js') }}"></script>
+    <script src="{{ asset('assets/js/admin-dashboard.js') }}"></script>
     <script src="{{ asset('assets/js/dashboard.js') }}"></script>
 </body>
 </html>

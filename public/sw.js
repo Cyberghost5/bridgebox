@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = 'bridgebox-offline-v4';
+﻿const CACHE_NAME = 'bridgebox-offline-v6';
 
 const PRECACHE_URLS = [
     '/',
@@ -9,6 +9,8 @@ const PRECACHE_URLS = [
     '/assets/js/auth.js',
     '/assets/js/landing.js',
     '/assets/js/login.js',
+    '/assets/js/admin-actions.js',
+    '/assets/js/admin-dashboard.js',
     '/assets/js/offline.js',
     '/assets/fonts/dm-sans-400.ttf',
     '/assets/fonts/dm-sans-500.ttf',
