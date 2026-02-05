@@ -75,10 +75,20 @@
         buttons.forEach((button) => {
             if (!button.dataset.originalText) {
                 button.dataset.originalText = button.textContent;
+                button.dataset.initialDisabled = button.disabled ? 'true' : 'false';
             }
-            button.disabled = isLoading;
+            button.disabled = isLoading ? true : button.dataset.initialDisabled === 'true';
             button.textContent = isLoading ? 'Working...' : button.dataset.originalText;
         });
+
+        const toggleInput = form.querySelector('input[type="checkbox"]');
+        if (toggleInput) {
+            if (!toggleInput.dataset.initialDisabled) {
+                toggleInput.dataset.initialDisabled = toggleInput.disabled ? 'true' : 'false';
+            }
+            toggleInput.dataset.locked = isLoading ? 'true' : 'false';
+            toggleInput.disabled = isLoading ? true : toggleInput.dataset.initialDisabled === 'true';
+        }
     };
 
     const closeModal = (result) => {
@@ -139,6 +149,66 @@
         }
     });
 
+    const runAction = async ({ url, form, actionName, onComplete }) => {
+        setAlert('', true);
+        setLoading(form, true);
+
+        const formData = new FormData(form);
+        const csrfToken = formData.get('_token') || '';
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                },
+                credentials: 'same-origin',
+                body: formData,
+            });
+
+            if (response.status === 419) {
+                setAlert('Session expired. Refreshing for a new token...', false);
+                window.location.reload();
+                return { success: false };
+            }
+
+            let payload = null;
+            let rawText = '';
+            try {
+                payload = await response.json();
+            } catch (error) {
+                rawText = await response.text().catch(() => '');
+            }
+
+            const success = response.ok && payload?.success !== false;
+            const message = payload?.message || rawText || (response.ok ? 'Action completed.' : `Action failed (${response.status}).`);
+
+            setAlert(message, success);
+
+            if ((payload?.logs_cleared || actionName === 'clear_logs') && success) {
+                clearLogRows();
+            }
+
+            insertLogRow(payload?.log);
+
+            if (onComplete) {
+                onComplete(success, payload);
+            }
+
+            return { success, payload };
+        } catch (error) {
+            setAlert('Unable to reach the server. Check your connection.', false);
+            if (onComplete) {
+                onComplete(false, null);
+            }
+            return { success: false };
+        } finally {
+            setLoading(form, false);
+        }
+    };
+
     forms.forEach((form) => {
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -149,54 +219,42 @@
                 return;
             }
 
-            setAlert('', true);
-            setLoading(form, true);
+            await runAction({
+                url: form.action,
+                form,
+                actionName: form.dataset.actionName,
+            });
+        });
+    });
 
-            const formData = new FormData(form);
-            const csrfToken = formData.get('_token') || '';
+    const toggleForms = document.querySelectorAll('form[data-admin-toggle]');
+    toggleForms.forEach((form) => {
+        const toggleInput = form.querySelector('input[type="checkbox"]');
+        if (!toggleInput) {
+            return;
+        }
 
-            try {
-                const response = await fetch(form.action, {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                    },
-                    credentials: 'same-origin',
-                    body: formData,
-                });
+        toggleInput.addEventListener('change', async () => {
+            const nextState = toggleInput.checked;
+            const url = nextState ? form.dataset.actionOn : form.dataset.actionOff;
+            const confirmMessage = nextState ? form.dataset.confirmOn : form.dataset.confirmOff;
+            const confirmed = await confirmAction(confirmMessage);
 
-                if (response.status === 419) {
-                    setAlert('Session expired. Refreshing for a new token...', false);
-                    window.location.reload();
-                    return;
-                }
-
-                let payload = null;
-                let rawText = '';
-                try {
-                    payload = await response.json();
-                } catch (error) {
-                    rawText = await response.text().catch(() => '');
-                }
-
-                const success = response.ok && payload?.success !== false;
-                const message = payload?.message || rawText || (response.ok ? 'Action completed.' : `Action failed (${response.status}).`);
-                const actionName = form.dataset.actionName || payload?.action;
-
-                setAlert(message, success);
-
-                if ((payload?.logs_cleared || actionName === 'clear_logs') && success) {
-                    clearLogRows();
-                }
-
-                insertLogRow(payload?.log);
-            } catch (error) {
-                setAlert('Unable to reach the server. Check your connection.', false);
-            } finally {
-                setLoading(form, false);
+            if (!confirmed) {
+                toggleInput.checked = !nextState;
+                return;
             }
+
+            await runAction({
+                url,
+                form,
+                actionName: nextState ? form.dataset.actionOn : form.dataset.actionOff,
+                onComplete: (success) => {
+                    if (!success) {
+                        toggleInput.checked = !nextState;
+                    }
+                },
+            });
         });
     });
 })();

@@ -20,6 +20,23 @@
         target.textContent = value ?? 'Unknown';
     };
 
+    const updateToggle = (key, value) => {
+        const toggle = document.querySelector(`[data-toggle-target="${key}"]`);
+        if (!toggle || toggle.dataset.locked === 'true') {
+            return;
+        }
+
+        const text = String(value || '').toLowerCase();
+        let isOn = false;
+        if (key === 'server') {
+            isOn = text.includes('running');
+        } else if (key === 'hotspot') {
+            isOn = text.startsWith('on');
+        }
+
+        toggle.checked = isOn;
+    };
+
     const formatDuration = (totalSeconds) => {
         if (typeof totalSeconds !== 'number' || Number.isNaN(totalSeconds)) {
             return 'Unknown';
@@ -73,7 +90,9 @@
             return;
         }
         updateTile('server', data.server);
+        updateToggle('server', data.server);
         updateTile('hotspot', data.hotspot);
+        updateToggle('hotspot', data.hotspot);
         updateTile('devices', data.devices);
         updateTile('app_health', data.app_health);
         updateTile('storage', data.storage);

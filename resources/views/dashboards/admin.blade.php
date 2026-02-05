@@ -63,6 +63,8 @@
                 $flashMessage = session('action_message');
                 $actionsDisabled = !$actionsEnabled;
                 $sudoBlocked = (!$actionsEnabled) || (!$sudoAllowed);
+                $serverRunning = str_contains(strtolower($status['server'] ?? ''), 'running');
+                $hotspotOn = str_starts_with(strtolower($status['hotspot'] ?? ''), 'on');
             @endphp
             <div id="action-alert" class="alert {{ $flashStatus === 'success' ? 'alert-success' : ($flashStatus === 'error' ? 'alert-error' : '') }}" role="status" aria-live="polite" @if (!$flashMessage) hidden @endif>
                 {{ $flashMessage }}
@@ -187,37 +189,31 @@
                     <span class="badge gold">Actions</span>
                 </div>
                 <div class="panel-body">
-                    <form class="item" data-admin-action data-confirm="Start the server services?" action="{{ route('dashboard.admin.actions', ['action' => 'start_server']) }}" method="post">
-                        @csrf
+                    <div class="item">
                         <div class="item-info">
-                            <p>Start Server</p>
-                            <span>nginx + php-fpm + SQLite permissions check</span>
+                            <p>Server</p>
+                            <span>nginx + php-fpm services</span>
                         </div>
-                        <button class="btn primary" type="submit" @disabled($sudoBlocked)>Start</button>
-                    </form>
-                    <form class="item" data-admin-action data-confirm="Stop the server services?" action="{{ route('dashboard.admin.actions', ['action' => 'stop_server']) }}" method="post">
-                        @csrf
-                        <div class="item-info">
-                            <p>Stop Server</p>
-                            <span>Gracefully stop services</span>
-                        </div>
-                        <button class="btn ghost" type="submit" @disabled($sudoBlocked)>Stop</button>
-                    </form>
+                        <form class="toggle-form" data-admin-toggle data-action-on="{{ route('dashboard.admin.actions', ['action' => 'start_server']) }}" data-action-off="{{ route('dashboard.admin.actions', ['action' => 'stop_server']) }}" data-confirm-on="Start the server services?" data-confirm-off="Stop the server services?" method="post">
+                            @csrf
+                            <label class="toggle">
+                                <input type="checkbox" data-toggle-input data-toggle-target="server" @checked($serverRunning) @disabled($sudoBlocked)>
+                                <span class="toggle-track"></span>
+                            </label>
+                        </form>
+                    </div>
                     <div class="item">
                         <div class="item-info">
                             <p>Hotspot Control</p>
                             <span>Turn hotspot on/off</span>
                         </div>
-                        <div class="inline-actions">
-                            <form data-admin-action data-confirm="Turn hotspot on?" action="{{ route('dashboard.admin.actions', ['action' => 'hotspot_on']) }}" method="post">
-                                @csrf
-                                <button class="btn primary" type="submit" @disabled($sudoBlocked)>On</button>
-                            </form>
-                            <form data-admin-action data-confirm="Turn hotspot off?" action="{{ route('dashboard.admin.actions', ['action' => 'hotspot_off']) }}" method="post">
-                                @csrf
-                                <button class="btn ghost" type="submit" @disabled($sudoBlocked)>Off</button>
-                            </form>
-                        </div>
+                        <form class="toggle-form" data-admin-toggle data-action-on="{{ route('dashboard.admin.actions', ['action' => 'hotspot_on']) }}" data-action-off="{{ route('dashboard.admin.actions', ['action' => 'hotspot_off']) }}" data-confirm-on="Turn hotspot on?" data-confirm-off="Turn hotspot off?" method="post">
+                            @csrf
+                            <label class="toggle">
+                                <input type="checkbox" data-toggle-input data-toggle-target="hotspot" @checked($hotspotOn) @disabled($sudoBlocked)>
+                                <span class="toggle-track"></span>
+                            </label>
+                        </form>
                     </div>
                     <div class="item">
                         <div class="item-info">
