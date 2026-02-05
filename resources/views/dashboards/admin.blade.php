@@ -11,8 +11,9 @@
         <aside class="sidebar">
             <div class="brand">
                 <div class="brand-mark">
-                    <span></span>
-                    <span></span>
+                    <img class="brand-logo" src="{{ asset('assets/images/favicon.png') }}" alt="BridgeBox logo">
+                    <!-- <span></span>
+                    <span></span> -->
                 </div>
                 <span class="brand-name">BridgeBox</span>
             </div>
