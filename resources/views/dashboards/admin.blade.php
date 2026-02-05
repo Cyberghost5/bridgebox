@@ -161,7 +161,7 @@
                     </div>
                     <div>
                         <p>Uptime</p>
-                        <span data-status="uptime">{{ $status['uptime'] ?? 'Unknown' }}</span>
+                        <span data-status="uptime" data-uptime-seconds="{{ $status['uptime_seconds'] ?? '' }}">{{ $status['uptime'] ?? 'Unknown' }}</span>
                     </div>
                 </div>
                 <div class="tab" style="--accent: #e45757; --d: 0.4s;">

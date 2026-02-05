@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = 'bridgebox-offline-v6';
+const CACHE_NAME = 'bridgebox-offline-v7';
 
 const PRECACHE_URLS = [
     '/',

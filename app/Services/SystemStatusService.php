@@ -13,6 +13,7 @@ class SystemStatusService
     public function snapshot(): array
     {
         return Cache::remember(self::CACHE_KEY, self::CACHE_TTL_SECONDS, function () {
+            $uptimeSeconds = $this->getUptimeSeconds();
             return [
                 'server' => $this->getServerStatus(),
                 'hotspot' => $this->getHotspotStatus(),
@@ -20,7 +21,8 @@ class SystemStatusService
                 'app_health' => $this->getAppHealth(),
                 'storage' => $this->getStorage(),
                 'power' => $this->getPowerHealth(),
-                'uptime' => $this->getUptime(),
+                'uptime' => $this->formatDuration($uptimeSeconds),
+                'uptime_seconds' => $uptimeSeconds,
                 'last_update' => $this->getLastUpdate(),
             ];
         });
@@ -28,8 +30,16 @@ class SystemStatusService
 
     private function getServerStatus(): string
     {
-        $nginxActive = $this->isServiceActive(['nginx']);
+        $nginxActive = $this->isServiceActive(['nginx', 'nginx.service']);
         $phpActive = $this->isServiceActive(['php-fpm', 'php8.2-fpm', 'php8.1-fpm', 'php8.0-fpm']);
+
+        if ($nginxActive === null) {
+            $nginxActive = $this->isProcessRunning(['nginx']);
+        }
+
+        if ($phpActive === null) {
+            $phpActive = $this->isProcessRunning(['php-fpm', 'php-fpm8.2', 'php-fpm8.1', 'php-fpm8.0'], true);
+        }
 
         if ($nginxActive === null && $phpActive === null) {
             return 'Unknown';
@@ -56,7 +66,12 @@ class SystemStatusService
             $type = $parts[1] ?? '';
             $active = $parts[3] ?? '';
 
-            if ($active === 'yes' && ($name === 'Hotspot' || $type === 'wifi')) {
+            if ($active === 'yes' && $this->isWifiConnectionType($type)) {
+                $ssid = $this->getActiveWifiSsid();
+                if ($ssid) {
+                    return "On · {$ssid}";
+                }
+
                 return $name ? "On · {$name}" : 'On';
             }
         }
@@ -132,15 +147,30 @@ class SystemStatusService
 
     private function getUptime(): string
     {
+        $seconds = $this->getUptimeSeconds();
+        return $this->formatDuration($seconds);
+    }
+
+    private function getUptimeSeconds(): ?int
+    {
         $procUptime = '/proc/uptime';
         if (is_file($procUptime)) {
             $contents = trim((string) file_get_contents($procUptime));
-            $seconds = (int) floor((float) explode(' ', $contents)[0]);
-            return $this->formatDuration($seconds);
+            $parts = explode(' ', $contents);
+            if (!empty($parts[0])) {
+                return (int) floor((float) $parts[0]);
+            }
         }
 
-        $output = $this->runCommand('uptime -p');
-        return $output ? trim($output) : 'Unknown';
+        $output = $this->runCommand('cat /proc/uptime');
+        if ($output) {
+            $parts = explode(' ', trim($output));
+            if (!empty($parts[0])) {
+                return (int) floor((float) $parts[0]);
+            }
+        }
+
+        return null;
     }
 
     private function getLastUpdate(): string
@@ -169,6 +199,51 @@ class SystemStatusService
 
             if (in_array($status, ['inactive', 'failed', 'deactivating'], true)) {
                 return false;
+            }
+        }
+
+        return null;
+    }
+
+    private function isProcessRunning(array $names, bool $fuzzy = false): ?bool
+    {
+        foreach ($names as $name) {
+            $command = $fuzzy ? "pgrep -f {$name}" : "pgrep -x {$name}";
+            $output = $this->runCommand($command);
+            if ($output === null) {
+                continue;
+            }
+
+            if (trim($output) !== '') {
+                return true;
+            }
+        }
+
+        return null;
+    }
+
+    private function isWifiConnectionType(string $type): bool
+    {
+        $type = strtolower($type);
+        return $type === 'wifi'
+            || str_contains($type, 'wireless')
+            || str_contains($type, '802-11');
+    }
+
+    private function getActiveWifiSsid(): ?string
+    {
+        $output = $this->runCommand('nmcli -t -f IN-USE,SSID dev wifi');
+        if ($output === null) {
+            return null;
+        }
+
+        $lines = array_filter(explode("\n", trim($output)));
+        foreach ($lines as $line) {
+            $parts = explode(':', $line, 2);
+            $flag = $parts[0] ?? '';
+            $ssid = $parts[1] ?? '';
+            if ($flag === '*' && $ssid !== '') {
+                return $ssid;
             }
         }
 
@@ -204,11 +279,16 @@ class SystemStatusService
         return sprintf('%.1f %s', $bytes, $units[$index]);
     }
 
-    private function formatDuration(int $seconds): string
+    private function formatDuration(?int $seconds): string
     {
+        if ($seconds === null) {
+            return 'Unknown';
+        }
+
         $days = intdiv($seconds, 86400);
         $hours = intdiv($seconds % 86400, 3600);
         $minutes = intdiv($seconds % 3600, 60);
+        $secs = $seconds % 60;
 
         $parts = [];
         if ($days > 0) {
@@ -218,6 +298,7 @@ class SystemStatusService
             $parts[] = $hours . 'h';
         }
         $parts[] = $minutes . 'm';
+        $parts[] = $secs . 's';
 
         return implode(' ', $parts);
     }
