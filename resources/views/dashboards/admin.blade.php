@@ -24,6 +24,21 @@
                         <path d="M5 9.5V21h14V9.5"></path>
                     </svg>
                 </a>
+                <a class="nav-item" href="{{ route('admin.users.teachers.index') }}" aria-label="Manage teachers">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                        <path d="M4 7h16"></path>
+                        <path d="M4 12h16"></path>
+                        <path d="M4 17h10"></path>
+                    </svg>
+                </a>
+                <a class="nav-item" href="{{ route('admin.users.students.index') }}" aria-label="Manage students">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M2 21a7 7 0 0 1 14 0"></path>
+                        <circle cx="17" cy="7" r="3"></circle>
+                        <path d="M16 14a6 6 0 0 1 6 6"></path>
+                    </svg>
+                </a>
                 <button class="nav-item" aria-label="System status">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
                         <path d="M4 18l6-6 4 4 6-8"></path>
