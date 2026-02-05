@@ -183,10 +183,11 @@
 
                 const success = response.ok && payload?.success !== false;
                 const message = payload?.message || rawText || (response.ok ? 'Action completed.' : `Action failed (${response.status}).`);
+                const actionName = form.dataset.actionName || payload?.action;
 
                 setAlert(message, success);
 
-                if (payload?.logs_cleared) {
+                if ((payload?.logs_cleared || actionName === 'clear_logs') && success) {
                     clearLogRows();
                 }
 

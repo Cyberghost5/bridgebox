@@ -243,7 +243,7 @@
                     <h4>Recent Admin Actions</h4>
                     <div class="panel-actions">
                         <span class="badge blue">Last 10</span>
-                        <form data-admin-action data-confirm="Clear all admin action logs?" action="{{ route('dashboard.admin.actions', ['action' => 'clear_logs']) }}" method="post">
+                        <form data-admin-action data-action-name="clear_logs" data-confirm="Clear all admin action logs?" action="{{ route('dashboard.admin.actions', ['action' => 'clear_logs']) }}" method="post">
                             @csrf
                             <button class="btn ghost btn-small" type="submit" @disabled($actionsDisabled)>Clear Logs</button>
                         </form>
