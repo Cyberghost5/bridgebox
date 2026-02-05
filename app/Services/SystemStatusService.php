@@ -33,14 +33,14 @@ class SystemStatusService
     private function getServerStatus(): string
     {
         $nginxActive = $this->isServiceActive(['nginx', 'nginx.service']);
-        $phpActive = $this->isServiceActive(['php-fpm', 'php8.2-fpm', 'php8.1-fpm', 'php8.0-fpm']);
+        $phpActive = $this->isServiceActive(['php-fpm', 'php8.2-fpm', 'php8.1-fpm', 'php8.0-fpm', 'php8.4-fpm']);
 
         if ($nginxActive === null) {
             $nginxActive = $this->isProcessRunning(['nginx']);
         }
 
         if ($phpActive === null) {
-            $phpActive = $this->isProcessRunning(['php-fpm', 'php-fpm8.2', 'php-fpm8.1', 'php-fpm8.0'], true);
+            $phpActive = $this->isProcessRunning(['php-fpm', 'php-fpm8.2', 'php-fpm8.1', 'php-fpm8.0', 'php-fpm8.4'], true);
         }
 
         if ($nginxActive === null && $phpActive === null) {
