@@ -61,7 +61,8 @@
             @php
                 $flashStatus = session('action_status');
                 $flashMessage = session('action_message');
-                $actionsBlocked = (!$actionsEnabled) || (!$sudoAllowed);
+                $actionsDisabled = !$actionsEnabled;
+                $sudoBlocked = (!$actionsEnabled) || (!$sudoAllowed);
             @endphp
             <div id="action-alert" class="alert {{ $flashStatus === 'success' ? 'alert-success' : ($flashStatus === 'error' ? 'alert-error' : '') }}" role="status" aria-live="polite" @if (!$flashMessage) hidden @endif>
                 {{ $flashMessage }}
@@ -192,7 +193,7 @@
                             <p>Start Server</p>
                             <span>nginx + php-fpm + SQLite permissions check</span>
                         </div>
-                        <button class="btn primary" type="submit" @disabled($actionsBlocked)>Start</button>
+                        <button class="btn primary" type="submit" @disabled($sudoBlocked)>Start</button>
                     </form>
                     <form class="item" data-admin-action data-confirm="Stop the server services?" action="{{ route('dashboard.admin.actions', ['action' => 'stop_server']) }}" method="post">
                         @csrf
@@ -200,7 +201,7 @@
                             <p>Stop Server</p>
                             <span>Gracefully stop services</span>
                         </div>
-                        <button class="btn ghost" type="submit" @disabled($actionsBlocked)>Stop</button>
+                        <button class="btn ghost" type="submit" @disabled($sudoBlocked)>Stop</button>
                     </form>
                     <div class="item">
                         <div class="item-info">
@@ -210,11 +211,11 @@
                         <div class="inline-actions">
                             <form data-admin-action data-confirm="Turn hotspot on?" action="{{ route('dashboard.admin.actions', ['action' => 'hotspot_on']) }}" method="post">
                                 @csrf
-                                <button class="btn primary" type="submit" @disabled($actionsBlocked)>On</button>
+                                <button class="btn primary" type="submit" @disabled($sudoBlocked)>On</button>
                             </form>
                             <form data-admin-action data-confirm="Turn hotspot off?" action="{{ route('dashboard.admin.actions', ['action' => 'hotspot_off']) }}" method="post">
                                 @csrf
-                                <button class="btn ghost" type="submit" @disabled($actionsBlocked)>Off</button>
+                                <button class="btn ghost" type="submit" @disabled($sudoBlocked)>Off</button>
                             </form>
                         </div>
                     </div>
@@ -226,11 +227,11 @@
                         <div class="inline-actions">
                             <form data-admin-action data-confirm="Reboot the device now?" action="{{ route('dashboard.admin.actions', ['action' => 'reboot']) }}" method="post">
                                 @csrf
-                                <button class="btn primary" type="submit" @disabled($actionsBlocked)>Reboot</button>
+                                <button class="btn primary" type="submit" @disabled($sudoBlocked)>Reboot</button>
                             </form>
                             <form data-admin-action data-confirm="Shutdown the device now?" action="{{ route('dashboard.admin.actions', ['action' => 'shutdown']) }}" method="post">
                                 @csrf
-                                <button class="btn ghost" type="submit" @disabled($actionsBlocked)>Shutdown</button>
+                                <button class="btn ghost" type="submit" @disabled($sudoBlocked)>Shutdown</button>
                             </form>
                         </div>
                     </div>
@@ -240,7 +241,13 @@
             <section class="panel table-panel">
                 <div class="panel-header">
                     <h4>Recent Admin Actions</h4>
-                    <span class="badge blue">Last 10</span>
+                    <div class="panel-actions">
+                        <span class="badge blue">Last 10</span>
+                        <form data-admin-action data-confirm="Clear all admin action logs?" action="{{ route('dashboard.admin.actions', ['action' => 'clear_logs']) }}" method="post">
+                            @csrf
+                            <button class="btn ghost btn-small" type="submit" @disabled($actionsDisabled)>Clear Logs</button>
+                        </form>
+                    </div>
                 </div>
                 <div class="panel-body table-scroll">
                     <table class="data-table">

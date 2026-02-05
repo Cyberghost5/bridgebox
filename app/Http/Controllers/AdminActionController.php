@@ -21,6 +21,12 @@ class AdminActionController extends Controller
             ];
         }
 
+        $logsCleared = false;
+        if ($action === 'clear_logs' && $result['success']) {
+            AdminActionLog::query()->delete();
+            $logsCleared = true;
+        }
+
         $log = AdminActionLog::create([
             'user_id' => $request->user()->id,
             'action' => $action,
@@ -33,6 +39,7 @@ class AdminActionController extends Controller
             $payload = [
                 'success' => $result['success'],
                 'message' => $result['message'],
+                'logs_cleared' => $logsCleared,
                 'log' => [
                     'time' => $log->created_at->format('Y-m-d H:i'),
                     'user' => $log->user->name ?? 'Unknown',

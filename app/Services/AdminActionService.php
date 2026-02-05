@@ -52,6 +52,12 @@ class AdminActionService
                 ['shutdown', '-h', 'now'],
             ],
         ],
+        'clear_logs' => [
+            'label' => 'Clear Logs',
+            'requires_sudo' => false,
+            'steps' => [],
+            'success_message' => 'Logs cleared.',
+        ],
     ];
 
     public function execute(string $action): array
@@ -83,9 +89,11 @@ class AdminActionService
             }
         }
 
+        $message = $definition['success_message'] ?? ($definition['label'] . ' completed.');
+
         return [
             'success' => true,
-            'message' => $definition['label'] . ' completed.',
+            'message' => $message,
         ];
     }
 

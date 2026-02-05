@@ -529,6 +529,17 @@ body::before {
     justify-content: space-between;
 }
 
+.panel-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn.btn-small {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
 .panel-header h4 {
     font-family: 'Sora', sans-serif;
     font-size: 15px;

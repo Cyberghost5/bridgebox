@@ -59,6 +59,17 @@
         logBody.prepend(row);
     };
 
+    const clearLogRows = () => {
+        if (!logBody) {
+            return;
+        }
+        logBody.innerHTML = '';
+        const empty = document.createElement('tr');
+        empty.setAttribute('data-action-log-empty', 'true');
+        empty.innerHTML = '<td colspan="5">No actions logged yet.</td>';
+        logBody.appendChild(empty);
+    };
+
     const setLoading = (form, isLoading) => {
         const buttons = Array.from(form.querySelectorAll('button[type="submit"]'));
         buttons.forEach((button) => {
@@ -174,6 +185,11 @@
                 const message = payload?.message || rawText || (response.ok ? 'Action completed.' : `Action failed (${response.status}).`);
 
                 setAlert(message, success);
+
+                if (payload?.logs_cleared) {
+                    clearLogRows();
+                }
+
                 insertLogRow(payload?.log);
             } catch (error) {
                 setAlert('Unable to reach the server. Check your connection.', false);
