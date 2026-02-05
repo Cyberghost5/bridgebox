@@ -42,10 +42,57 @@ const enableConfirmations = () => {
     });
 };
 
+const enableAlerts = () => {
+    const alerts = document.querySelectorAll('.alert[data-auto-dismiss]');
+    alerts.forEach((alert) => {
+        let timeoutId = null;
+        const closeButton = alert.querySelector('[data-alert-close]');
+
+        const clearTimer = () => {
+            if (timeoutId) {
+                window.clearTimeout(timeoutId);
+                timeoutId = null;
+            }
+            alert.classList.remove('is-fading');
+        };
+
+        const hideAlert = () => {
+            clearTimer();
+            alert.classList.add('is-fading');
+            window.setTimeout(() => {
+                alert.hidden = true;
+                alert.classList.remove('is-fading');
+            }, 350);
+        };
+
+        const schedule = () => {
+            clearTimer();
+            if (alert.hidden) {
+                return;
+            }
+            const delay = Number.parseInt(alert.dataset.autoDismiss || '0', 10);
+            if (delay > 0) {
+                timeoutId = window.setTimeout(hideAlert, delay);
+            }
+        };
+
+        if (closeButton) {
+            closeButton.addEventListener('click', hideAlert);
+        }
+
+        alert.addEventListener('alert:show', schedule);
+
+        if (!alert.hidden) {
+            schedule();
+        }
+    });
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     setBarAnimations();
     setMeterAnimations();
     enableNavHover();
     enableConfirmations();
+    enableAlerts();
 });
 

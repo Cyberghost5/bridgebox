@@ -18,16 +18,22 @@
         if (!alertBox) {
             return;
         }
-        alertBox.textContent = message;
+        const alertMessage = alertBox.querySelector('[data-alert-message]');
+        if (alertMessage) {
+            alertMessage.textContent = message;
+        } else {
+            alertBox.textContent = message;
+        }
         alertBox.hidden = !message;
         if (message) {
             alertBox.removeAttribute('hidden');
-            alertBox.style.display = 'block';
+            alertBox.style.display = 'flex';
         }
         alertBox.classList.remove('alert-success', 'alert-error');
         if (message) {
             alertBox.classList.add(isSuccess ? 'alert-success' : 'alert-error');
             alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            alertBox.dispatchEvent(new CustomEvent('alert:show'));
         }
     };
 

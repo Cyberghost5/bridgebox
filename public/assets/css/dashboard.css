@@ -740,6 +740,37 @@ body::before {
     border-radius: 12px;
     font-size: 13px;
     margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    transition: opacity 0.35s ease;
+}
+
+.alert.is-fading {
+    opacity: 0;
+}
+
+.alert [data-alert-message] {
+    flex: 1;
+}
+
+.alert-close {
+    border: none;
+    background: transparent;
+    color: inherit;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.alert-close:hover {
+    background: rgba(0, 0, 0, 0.08);
 }
 
 .alert-success {

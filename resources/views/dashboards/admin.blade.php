@@ -81,8 +81,9 @@
                 $serverRunning = str_contains(strtolower($status['server'] ?? ''), 'running');
                 $hotspotOn = str_starts_with(strtolower($status['hotspot'] ?? ''), 'on');
             @endphp
-            <div id="action-alert" class="alert {{ $flashStatus === 'success' ? 'alert-success' : ($flashStatus === 'error' ? 'alert-error' : '') }}" role="status" aria-live="polite" @if (!$flashMessage) hidden @endif>
-                {{ $flashMessage }}
+            <div id="action-alert" class="alert {{ $flashStatus === 'success' ? 'alert-success' : ($flashStatus === 'error' ? 'alert-error' : '') }}" role="status" aria-live="polite" data-auto-dismiss="4000" @if (!$flashMessage) hidden @endif>
+                <span data-alert-message>{{ $flashMessage }}</span>
+                <button class="alert-close" type="button" data-alert-close aria-label="Dismiss alert">×</button>
             </div>
             @if (!$actionsEnabled)
                 <div class="alert alert-warning">

@@ -74,8 +74,9 @@
             </header>
 
             @if (session('message'))
-                <div class="alert {{ session('status') === 'success' ? 'alert-success' : 'alert-error' }}" role="status">
-                    {{ session('message') }}
+                <div class="alert {{ session('status') === 'success' ? 'alert-success' : 'alert-error' }}" role="status" data-auto-dismiss="4000">
+                    <span data-alert-message>{{ session('message') }}</span>
+                    <button class="alert-close" type="button" data-alert-close aria-label="Dismiss alert">×</button>
                 </div>
             @endif
 
