@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -194,7 +194,7 @@
                     </div>
                     <div>
                         <p>Last Update</p>
-                        <span data-status="last_update">{{ $status['last_update'] ?? 'unknown' }}</span>
+                        <span data-status="last_update">{{ $status['last_update'] ?? 'Unknown' }}</span>
                     </div>
                 </div>
             </section>
