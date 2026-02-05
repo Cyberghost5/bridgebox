@@ -13,11 +13,13 @@ class SystemStatusService
     public function snapshot(): array
     {
         return Cache::remember(self::CACHE_KEY, self::CACHE_TTL_SECONDS, function () {
+            $hotspot = $this->getHotspotConnection();
             $uptimeSeconds = $this->getUptimeSeconds();
+
             return [
                 'server' => $this->getServerStatus(),
-                'hotspot' => $this->getHotspotStatus(),
-                'devices' => $this->getConnectedDevices(),
+                'hotspot' => $this->formatHotspotStatus($hotspot),
+                'devices' => $this->getConnectedDevices($hotspot),
                 'app_health' => $this->getAppHealth(),
                 'storage' => $this->getStorage(),
                 'power' => $this->getPowerHealth(),
@@ -52,11 +54,11 @@ class SystemStatusService
         return 'Stopped';
     }
 
-    private function getHotspotStatus(): string
+    private function getHotspotConnection(): ?array
     {
-        $output = $this->runCommand('nmcli -t -f NAME,TYPE,DEVICE,ACTIVE con show --active');
+        $output = $this->runCommand('nmcli -t -f NAME,TYPE,DEVICE,ACTIVE,UUID con show --active');
         if ($output === null) {
-            return 'Unknown';
+            return null;
         }
 
         $lines = array_filter(explode("\n", trim($output)));
@@ -64,24 +66,59 @@ class SystemStatusService
             $parts = explode(':', $line);
             $name = $parts[0] ?? '';
             $type = $parts[1] ?? '';
+            $device = $parts[2] ?? '';
             $active = $parts[3] ?? '';
+            $uuid = $parts[4] ?? '';
 
-            if ($active === 'yes' && $this->isWifiConnectionType($type)) {
-                $ssid = $this->getActiveWifiSsid();
-                if ($ssid) {
-                    return "On · {$ssid}";
-                }
+            if ($active !== 'yes' || !$this->isWifiConnectionType($type) || $uuid === '') {
+                continue;
+            }
 
-                return $name ? "On · {$name}" : 'On';
+            $modeOutput = $this->runCommand("nmcli -t -f 802-11-wireless.mode,802-11-wireless.ssid con show {$uuid}");
+            if ($modeOutput === null) {
+                continue;
+            }
+
+            $modeParts = explode(':', trim($modeOutput), 2);
+            $mode = strtolower($modeParts[0] ?? '');
+            $ssid = $modeParts[1] ?? '';
+
+            if ($mode === 'ap') {
+                return [
+                    'name' => $name,
+                    'ssid' => $ssid,
+                    'device' => $device,
+                ];
             }
         }
 
-        return 'Off';
+        return null;
     }
 
-    private function getConnectedDevices(): string
+    private function formatHotspotStatus(?array $hotspot): string
     {
-        $output = $this->runCommand('iw dev wlan0 station dump');
+        if ($hotspot === null) {
+            return 'Off';
+        }
+
+        $ssid = $hotspot['ssid'] ?? '';
+        $name = $hotspot['name'] ?? '';
+
+        if ($ssid !== '') {
+            return "On · {$ssid}";
+        }
+
+        return $name !== '' ? "On · {$name}" : 'On';
+    }
+
+    private function getConnectedDevices(?array $hotspot): string
+    {
+        if ($hotspot === null) {
+            return '0';
+        }
+
+        $device = $hotspot['device'] ?? 'wlan0';
+        $output = $this->runCommand("iw dev {$device} station dump");
         if ($output === null) {
             return 'Unknown';
         }
@@ -228,26 +265,6 @@ class SystemStatusService
         return $type === 'wifi'
             || str_contains($type, 'wireless')
             || str_contains($type, '802-11');
-    }
-
-    private function getActiveWifiSsid(): ?string
-    {
-        $output = $this->runCommand('nmcli -t -f IN-USE,SSID dev wifi');
-        if ($output === null) {
-            return null;
-        }
-
-        $lines = array_filter(explode("\n", trim($output)));
-        foreach ($lines as $line) {
-            $parts = explode(':', $line, 2);
-            $flag = $parts[0] ?? '';
-            $ssid = $parts[1] ?? '';
-            if ($flag === '*' && $ssid !== '') {
-                return $ssid;
-            }
-        }
-
-        return null;
     }
 
     private function runCommand(string $command): ?string

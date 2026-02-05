@@ -43,7 +43,7 @@
             </div>
         </aside>
 
-        <main class="main" data-refresh-url="{{ route('dashboard.admin.status') }}" data-refresh-interval="10000" data-auto-refresh="on">
+        <main class="main" data-refresh-url="{{ route('dashboard.admin.status') }}" data-refresh-interval="1000" data-auto-refresh="on">
             <header class="topbar">
                 <div class="greeting">
                     <p class="eyebrow">Admin Control Room</p>
