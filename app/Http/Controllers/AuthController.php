@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace App\Http\Controllers;
 
@@ -57,18 +57,20 @@ class AuthController extends Controller
             ->first();
 
         if (!$user || !Hash::check($request->string('password')->toString(), $user->password)) {
-            return back()
-                ->withInput(['identifier' => $identifier])
-                ->with('error', 'Invalid credentials. Please try again.');
+            return $this->loginFailed($request, $identifier, 'Invalid credentials. Please try again.');
         }
 
         if ($user->role !== $roleKey) {
-            return back()
-                ->withInput(['identifier' => $identifier])
-                ->with('error', 'This account does not match the selected role.');
+            return $this->loginFailed($request, $identifier, 'This account does not match the selected role.');
         }
 
         Auth::login($user);
+
+        $redirect = route('dashboard.' . $roleKey);
+
+        if ($request->expectsJson()) {
+            return response()->json(['redirect' => $redirect]);
+        }
 
         return redirect()->route('dashboard.' . $roleKey);
     }
@@ -81,5 +83,16 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('landing');
+    }
+
+    private function loginFailed(Request $request, string $identifier, string $message)
+    {
+        if ($request->expectsJson()) {
+            return response()->json(['message' => $message], 422);
+        }
+
+        return back()
+            ->withInput(['identifier' => $identifier])
+            ->with('error', $message);
     }
 }

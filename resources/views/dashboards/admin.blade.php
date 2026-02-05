@@ -11,54 +11,46 @@
         <aside class="sidebar">
             <div class="brand">
                 <div class="brand-mark">
-                    <span></span>
-                    <span></span>
+                    <img class="brand-logo" src="{{ asset('assets/images/favicon.png') }}" alt="BridgeBox logo">
+                    <!-- <span></span>
+                    <span></span> -->
                 </div>
                 <span class="brand-name">BridgeBox</span>
             </div>
             <nav class="nav">
-                <button class="nav-item active" aria-label="Admin overview">
+                <a class="nav-item active" href="{{ route('dashboard.admin') }}" aria-label="Admin control room">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
                         <path d="M3 10.5L12 3l9 7.5"></path>
                         <path d="M5 9.5V21h14V9.5"></path>
                     </svg>
-                </button>
-                <button class="nav-item" aria-label="Devices">
+                </a>
+                <button class="nav-item" aria-label="System status">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                        <rect x="3" y="4" width="18" height="14" rx="2"></rect>
-                        <path d="M7 18v2"></path>
-                        <path d="M17 18v2"></path>
+                        <path d="M4 18l6-6 4 4 6-8"></path>
                     </svg>
                 </button>
-                <button class="nav-item" aria-label="Content packs">
+                <button class="nav-item" aria-label="Admin actions">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
                         <path d="M4 6h16v12H4z"></path>
                         <path d="M7 9h10"></path>
                         <path d="M7 13h6"></path>
                     </svg>
                 </button>
-                <button class="nav-item" aria-label="Settings">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                        <circle cx="12" cy="12" r="3.2"></circle>
-                        <path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a1.5 1.5 0 0 1-2.1 2.1l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V19a1.5 1.5 0 0 1-3 0v-.1a1 1 0 0 0-.7-.9 1 1 0 0 0-1.1.2l-.1.1a1.5 1.5 0 0 1-2.1-2.1l.1-.1a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H5a1.5 1.5 0 0 1 0-3h.1a1 1 0 0 0 .9-.7 1 1 0 0 0-.2-1.1l-.1-.1a1.5 1.5 0 1 1 2.1-2.1l.1.1a1 1 0 0 0 1.1.2 1 1 0 0 0 .6-.9V5a1.5 1.5 0 0 1 3 0v.1a1 1 0 0 0 .7.9 1 1 0 0 0 1.1-.2l.1-.1a1.5 1.5 0 1 1 2.1 2.1l-.1.1a1 1 0 0 0-.2 1.1 1 1 0 0 0 .9.6H19a1.5 1.5 0 0 1 0 3h-.1a1 1 0 0 0-.9.7z"></path>
-                    </svg>
-                </button>
             </nav>
             <div class="sidebar-footer">
                 <div class="status-dot"></div>
-                <span>Online</span>
+                <span>Admin</span>
             </div>
         </aside>
 
         <main class="main">
             <header class="topbar">
                 <div class="greeting">
-                    <p class="eyebrow">Admin Control Center</p>
-                    <h1>Welcome back, {{ auth()->user()->name ?? 'Admin' }}.</h1>
-                    <p class="subtext">Monitor schools, devices, and content health in one place.</p>
+                    <p class="eyebrow">Admin Control Room</p>
+                    <h1>Welcome, {{ auth()->user()->name ?? 'Admin' }}.</h1>
+                    <p class="subtext">Monitor system health and manage critical services.</p>
                 </div>
                 <div class="actions">
-                    <button class="btn ghost">Review Requests</button>
                     <form action="{{ route('logout') }}" method="post">
                         @csrf
                         <button class="btn primary" type="submit">Logout</button>
@@ -74,33 +66,11 @@
                         </svg>
                     </div>
                     <div>
-                        <p>Active Schools</p>
-                        <span>42 connected hubs</span>
+                        <p>Server Status</p>
+                        <span>{{ $status['server'] ?? 'Unknown' }}</span>
                     </div>
                 </div>
                 <div class="tab" style="--accent: #e56b6f; --d: 0.1s;">
-                    <div class="tab-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                            <path d="M4 6h16v12H4z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <p>Devices Online</p>
-                        <span>118 of 128 online</span>
-                    </div>
-                </div>
-                <div class="tab" style="--accent: #f2b84b; --d: 0.15s;">
-                    <div class="tab-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                            <path d="M5 4h14a2 2 0 0 1 2 2v12H7a2 2 0 0 0-2 2V4z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <p>Content Packs</p>
-                        <span>9 updates pending</span>
-                    </div>
-                </div>
-                <div class="tab" style="--accent: #56c1a7; --d: 0.2s;">
                     <div class="tab-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
                             <path d="M3 7h18"></path>
@@ -109,54 +79,129 @@
                         </svg>
                     </div>
                     <div>
-                        <p>Support Tickets</p>
-                        <span>6 awaiting review</span>
+                        <p>Hotspot Status</p>
+                        <span>{{ $status['hotspot'] ?? 'Unknown' }}</span>
+                    </div>
+                </div>
+                <div class="tab" style="--accent: #f2b84b; --d: 0.15s;">
+                    <div class="tab-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                            <path d="M4 6h16v12H4z"></path>
+                            <path d="M7 9h10"></path>
+                            <path d="M7 13h6"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p>Connected Devices</p>
+                        <span>{{ $status['devices'] ?? 'Unknown' }}</span>
+                    </div>
+                </div>
+                <div class="tab" style="--accent: #56c1a7; --d: 0.2s;">
+                    <div class="tab-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                            <path d="M4 4h16v16H4z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p>App Health</p>
+                        <span>{{ $status['app_health'] ?? 'Unknown' }}</span>
+                    </div>
+                </div>
+                <div class="tab" style="--accent: #5b8de3; --d: 0.25s;">
+                    <div class="tab-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                            <path d="M3 6h18v12H3z"></path>
+                            <path d="M8 18v2"></path>
+                            <path d="M16 18v2"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p>Storage</p>
+                        <span>{{ $status['storage'] ?? 'Unknown' }}</span>
+                    </div>
+                </div>
+                <div class="tab" style="--accent: #f08b5a; --d: 0.3s;">
+                    <div class="tab-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                            <path d="M12 2v6"></path>
+                            <path d="M8 4h8"></path>
+                            <path d="M6 8h12"></path>
+                            <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p>Power Health</p>
+                        <span>{{ $status['power'] ?? 'Unknown' }}</span>
+                    </div>
+                </div>
+                <div class="tab" style="--accent: #3bb98d; --d: 0.35s;">
+                    <div class="tab-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                            <circle cx="12" cy="12" r="9"></circle>
+                            <path d="M12 7v6l3 3"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p>Uptime</p>
+                        <span>{{ $status['uptime'] ?? 'Unknown' }}</span>
+                    </div>
+                </div>
+                <div class="tab" style="--accent: #e45757; --d: 0.4s;">
+                    <div class="tab-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                            <path d="M6 2v4"></path>
+                            <path d="M18 2v4"></path>
+                            <rect x="3" y="4" width="18" height="17" rx="2"></rect>
+                            <path d="M3 9h18"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p>Last Update</p>
+                        <span>{{ $status['last_update'] ?? 'unknown' }}</span>
                     </div>
                 </div>
             </section>
 
-            <section class="panel table-panel">
+            <section class="panel">
                 <div class="panel-header">
-                    <h4>Admin Module Table</h4>
-                    <span class="badge blue">Today</span>
+                    <h4>Admin Controls</h4>
+                    <span class="badge gold">Placeholder</span>
                 </div>
-                <div class="panel-body table-scroll">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Module</th>
-                                <th>Owner</th>
-                                <th>Status</th>
-                                <th>Last Sync</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Device Fleet</td>
-                                <td>North Region Ops</td>
-                                <td><span class="badge green">Stable</span></td>
-                                <td>15 minutes ago</td>
-                            </tr>
-                            <tr>
-                                <td>Content Library</td>
-                                <td>Zee Tech</td>
-                                <td><span class="badge teal">Review</span></td>
-                                <td>1 hour ago</td>
-                            </tr>
-                            <tr>
-                                <td>Access Control</td>
-                                <td>BridgeBox Admin</td>
-                                <td><span class="badge gold">Pending</span></td>
-                                <td>Today 8:05 AM</td>
-                            </tr>
-                            <tr>
-                                <td>Analytics Sync</td>
-                                <td>Monitoring</td>
-                                <td><span class="badge blue">Active</span></td>
-                                <td>Yesterday</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="panel-body">
+                    <div class="item">
+                        <div class="item-info">
+                            <p>Start Server</p>
+                            <span>nginx + php-fpm + SQLite permissions</span>
+                        </div>
+                        <button class="btn primary" type="button" disabled>Start</button>
+                    </div>
+                    <div class="item">
+                        <div class="item-info">
+                            <p>Stop Server</p>
+                            <span>Gracefully stop services</span>
+                        </div>
+                        <button class="btn ghost" type="button" disabled>Stop</button>
+                    </div>
+                    <div class="item">
+                        <div class="item-info">
+                            <p>Hotspot Control</p>
+                            <span>Turn hotspot on/off</span>
+                        </div>
+                        <div class="actions">
+                            <button class="btn primary" type="button" disabled>On</button>
+                            <button class="btn ghost" type="button" disabled>Off</button>
+                        </div>
+                    </div>
+                    <div class="item">
+                        <div class="item-info">
+                            <p>Power Actions</p>
+                            <span>Reboot or shutdown device</span>
+                        </div>
+                        <div class="actions">
+                            <button class="btn primary" type="button" disabled>Reboot</button>
+                            <button class="btn ghost" type="button" disabled>Shutdown</button>
+                        </div>
+                    </div>
                 </div>
             </section>
         </main>

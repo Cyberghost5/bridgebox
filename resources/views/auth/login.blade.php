@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $role }} Login | BridgeBox</title>
     <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
 </head>
@@ -18,13 +19,11 @@
                     <p class="subtext">{{ $subtitle }}</p>
                 </div>
 
-                @if (session('error'))
-                    <div class="alert">{{ session('error') }}</div>
-                @elseif ($errors->any())
-                    <div class="alert">{{ $errors->first() }}</div>
-                @endif
+                <div class="alert" id="login-error" @if(!session('error') && !$errors->any()) hidden @endif>
+                    {{ session('error') ?? ($errors->first() ?? '') }}
+                </div>
 
-                <form class="login-form" action="{{ route('login.submit', ['role' => $roleKey]) }}" method="post">
+                <form class="login-form" id="login-form" action="{{ route('login.submit', ['role' => $roleKey]) }}" method="post">
                     @csrf
                     <div class="field">
                         <label for="email">Email or username</label>
@@ -60,6 +59,7 @@
     </div>
 
     <script src="{{ asset('assets/js/auth.js') }}"></script>
+    <script src="{{ asset('assets/js/login.js') }}"></script>
     <script src="{{ asset('assets/js/offline.js') }}"></script>
 </body>
 </html>

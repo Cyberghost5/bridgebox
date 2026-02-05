@@ -151,6 +151,13 @@ body::before {
     opacity: 0.8;
 }
 
+.brand-logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    animation: breathe1 5.2s ease-in-out infinite;
+}
+
 .nav {
     display: flex;
     flex-direction: column;
@@ -199,6 +206,7 @@ body::before {
     border-radius: 50%;
     background: #54d6a8;
     box-shadow: 0 0 10px rgba(84, 214, 168, 0.6);
+    animation: breathe1 5.2s ease-in-out infinite;
 }
 
 .main {
@@ -747,6 +755,16 @@ body::before {
     height: 6px;
     border-radius: 50%;
     background: #c1cad8;
+}
+
+@keyframes breathe1 {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.152);
+    }
 }
 
 @keyframes rise {

@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = 'bridgebox-offline-v2';
+﻿const CACHE_NAME = 'bridgebox-offline-v4';
 
 const PRECACHE_URLS = [
     '/',
@@ -8,6 +8,7 @@ const PRECACHE_URLS = [
     '/assets/css/auth.css',
     '/assets/js/auth.js',
     '/assets/js/landing.js',
+    '/assets/js/login.js',
     '/assets/js/offline.js',
     '/assets/fonts/dm-sans-400.ttf',
     '/assets/fonts/dm-sans-500.ttf',
@@ -42,19 +43,36 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
+    const acceptHeader = event.request.headers.get('accept') || '';
+    const isNavigation = event.request.mode === 'navigate' || acceptHeader.includes('text/html');
+
     event.respondWith(
-        caches.match(event.request).then((cached) => {
+        (async () => {
+            if (isNavigation) {
+                try {
+                    const response = await fetch(event.request);
+                    const cache = await caches.open(CACHE_NAME);
+                    cache.put(event.request, response.clone());
+                    return response;
+                } catch (error) {
+                    const cached = await caches.match(event.request);
+                    return cached || caches.match('/');
+                }
+            }
+
+            const cached = await caches.match(event.request);
             if (cached) {
                 return cached;
             }
 
-            return fetch(event.request)
-                .then((response) => {
-                    const copy = response.clone();
-                    caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-                    return response;
-                })
-                .catch(() => caches.match('/'));
-        })
+            try {
+                const response = await fetch(event.request);
+                const cache = await caches.open(CACHE_NAME);
+                cache.put(event.request, response.clone());
+                return response;
+            } catch (error) {
+                return caches.match('/');
+            }
+        })()
     );
 });

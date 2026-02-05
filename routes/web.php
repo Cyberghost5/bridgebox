@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,7 +16,7 @@ Route::post('/login/{role}', [AuthController::class, 'login'])
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-Route::view('/dashboard/admin', 'dashboards.admin')
+Route::get('/dashboard/admin', [AdminDashboardController::class, 'index'])
     ->middleware('role:admin')
     ->name('dashboard.admin');
 

@@ -142,6 +142,7 @@ body[data-screen='role'] #splash {
     width: min(220px, 70vw);
     height: auto;
     display: block;
+    animation: breathe1 5.2s ease-in-out infinite;
 }
 
 .brand-mark {
@@ -470,6 +471,16 @@ body[data-screen='role'] #splash {
     50% {
         transform: scale(1.015);
         box-shadow: 0 22px 40px rgba(24, 38, 54, 0.16);
+    }
+}
+
+@keyframes breathe1 {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.152);
     }
 }
 
