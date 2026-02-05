@@ -42,6 +42,10 @@ Route::prefix('dashboard/admin/users')
         Route::get('/students/create', [AdminUserController::class, 'createStudent'])->name('students.create');
         Route::post('/students', [AdminUserController::class, 'storeStudent'])->name('students.store');
         Route::get('/students/{user}/created', [AdminUserController::class, 'createdStudent'])->name('students.created');
+        Route::post('/users/{user}/toggle', [AdminUserController::class, 'toggleStatus'])->name('toggle');
+        Route::post('/users/{user}/reset-password', [AdminUserController::class, 'resetPassword'])->name('reset');
+        Route::get('/users/{user}/password-reset', [AdminUserController::class, 'showPasswordReset'])->name('password-reset');
+        Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('delete');
     });
 
 Route::view('/dashboard/teacher', 'dashboards.teacher')

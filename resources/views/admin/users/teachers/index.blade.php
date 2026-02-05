@@ -73,6 +73,12 @@
                 </div>
             </header>
 
+            @if (session('message'))
+                <div class="alert {{ session('status') === 'success' ? 'alert-success' : 'alert-error' }}" role="status">
+                    {{ session('message') }}
+                </div>
+            @endif
+
             <section class="panel table-panel">
                 <div class="panel-header">
                     <h4>Teachers List</h4>
@@ -97,7 +103,9 @@
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Phone</th>
+                                    <th>Status</th>
                                     <th>Created</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -106,11 +114,35 @@
                                         <td>{{ $teacher->name }}</td>
                                         <td>{{ $teacher->email }}</td>
                                         <td>{{ $teacher->phone ?: '-' }}</td>
+                                        <td>
+                                            <span class="badge {{ $teacher->is_active ? 'green' : 'rose' }}">
+                                                {{ $teacher->is_active ? 'Active' : 'Disabled' }}
+                                            </span>
+                                        </td>
                                         <td>{{ $teacher->created_at?->format('Y-m-d') ?? '-' }}</td>
+                                        <td>
+                                            <div class="table-actions">
+                                                <form method="post" action="{{ route('admin.users.toggle', $teacher) }}" data-confirm="Are you sure?">
+                                                    @csrf
+                                                    <button class="btn ghost btn-small" type="submit">
+                                                        {{ $teacher->is_active ? 'Disable' : 'Enable' }}
+                                                    </button>
+                                                </form>
+                                                <form method="post" action="{{ route('admin.users.reset', $teacher) }}" data-confirm="Reset password for this teacher?">
+                                                    @csrf
+                                                    <button class="btn ghost btn-small" type="submit">Reset Password</button>
+                                                </form>
+                                                <form method="post" action="{{ route('admin.users.delete', $teacher) }}" data-confirm="Delete this teacher account?">
+                                                    @csrf
+                                                    @method('delete')
+                                                    <button class="btn ghost btn-small" type="submit">Delete</button>
+                                                </form>
+                                            </div>
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td class="table-empty" colspan="4">No teachers found.</td>
+                                        <td class="table-empty" colspan="6">No teachers found.</td>
                                     </tr>
                                 @endforelse
                             </tbody>

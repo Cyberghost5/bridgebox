@@ -64,6 +64,10 @@ class AuthController extends Controller
             return $this->loginFailed($request, $identifier, 'This account does not match the selected role.');
         }
 
+        if ($user->is_active === false) {
+            return $this->loginFailed($request, $identifier, 'This account has been disabled. Please contact an administrator.');
+        }
+
         Auth::login($user);
 
         $redirect = route('dashboard.' . $roleKey);

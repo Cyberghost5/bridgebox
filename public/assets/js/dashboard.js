@@ -30,9 +30,22 @@ const enableNavHover = () => {
     });
 };
 
+const enableConfirmations = () => {
+    const forms = document.querySelectorAll('form[data-confirm]');
+    forms.forEach((form) => {
+        form.addEventListener('submit', (event) => {
+            const message = form.getAttribute('data-confirm');
+            if (message && !window.confirm(message)) {
+                event.preventDefault();
+            }
+        });
+    });
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     setBarAnimations();
     setMeterAnimations();
     enableNavHover();
+    enableConfirmations();
 });
 

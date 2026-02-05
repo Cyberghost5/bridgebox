@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTeacherRequest;
 use App\Http\Requests\StoreStudentRequest;
+use App\Models\AdminActionLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -14,6 +15,11 @@ use Illuminate\View\View;
 
 class AdminUserController extends Controller
 {
+    private const MANAGED_ROLES = [
+        User::ROLE_TEACHER,
+        User::ROLE_STUDENT,
+    ];
+
     public function teachers(Request $request): View
     {
         $search = $request->string('q')->trim()->toString();
@@ -144,6 +150,118 @@ class AdminUserController extends Controller
             'profile' => $user->studentProfile,
             'generatedPassword' => session('generated_password'),
             'passwordMode' => session('password_mode', 'manual'),
+        ]);
+    }
+
+    public function toggleStatus(User $user): RedirectResponse
+    {
+        $this->assertManageable($user);
+
+        if ($user->id === auth()->id()) {
+            return back()->with([
+                'status' => 'error',
+                'message' => 'You cannot disable your own account.',
+            ]);
+        }
+
+        $user->is_active = !$user->is_active;
+        $user->save();
+
+        $action = $user->is_active ? 'user_enable' : 'user_disable';
+        $message = sprintf('%s %s account (%s).', $user->is_active ? 'Enabled' : 'Disabled', $user->role, $user->email);
+
+        $this->logAdminAction($action, 'success', $message);
+
+        return back()->with([
+            'status' => 'success',
+            'message' => $message,
+        ]);
+    }
+
+    public function resetPassword(User $user): RedirectResponse
+    {
+        $this->assertManageable($user);
+
+        $plainPassword = Str::random(12);
+        $user->password = Hash::make($plainPassword);
+        $user->save();
+
+        $message = sprintf('Password reset for %s account (%s).', $user->role, $user->email);
+        $this->logAdminAction('user_reset_password', 'success', $message);
+
+        return redirect()
+            ->route('admin.users.password-reset', $user)
+            ->with([
+                'generated_password' => $plainPassword,
+                'status' => 'success',
+                'message' => $message,
+            ]);
+    }
+
+    public function showPasswordReset(User $user)
+    {
+        $this->assertManageable($user);
+
+        $generatedPassword = session('generated_password');
+        if (!$generatedPassword) {
+            return redirect()
+                ->route($this->indexRouteFor($user))
+                ->with([
+                    'status' => 'error',
+                    'message' => 'The reset password is no longer available. Please reset again if needed.',
+                ]);
+        }
+
+        return view('admin.users.password-reset', [
+            'user' => $user,
+            'generatedPassword' => $generatedPassword,
+            'backRoute' => $this->indexRouteFor($user),
+        ]);
+    }
+
+    public function destroy(User $user): RedirectResponse
+    {
+        $this->assertManageable($user);
+
+        if ($user->id === auth()->id()) {
+            return back()->with([
+                'status' => 'error',
+                'message' => 'You cannot delete your own account.',
+            ]);
+        }
+
+        $email = $user->email;
+        $role = $user->role;
+        $user->delete();
+
+        $message = sprintf('Deleted %s account (%s).', $role, $email);
+        $this->logAdminAction('user_delete', 'success', $message);
+
+        return back()->with([
+            'status' => 'success',
+            'message' => $message,
+        ]);
+    }
+
+    private function assertManageable(User $user): void
+    {
+        abort_unless(in_array($user->role, self::MANAGED_ROLES, true), 404);
+    }
+
+    private function indexRouteFor(User $user): string
+    {
+        return $user->role === User::ROLE_TEACHER
+            ? 'admin.users.teachers.index'
+            : 'admin.users.students.index';
+    }
+
+    private function logAdminAction(string $action, string $result, string $message): void
+    {
+        AdminActionLog::create([
+            'user_id' => auth()->id(),
+            'action' => $action,
+            'result' => $result,
+            'message' => $message,
         ]);
     }
 }
