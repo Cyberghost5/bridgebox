@@ -41,3 +41,9 @@ BridgeBox was designed as an innovation that bridges this gap — literally serv
 ## Team Note
 
 This README is the shared foundation for our work. If you are new to the project, start here and align on the mission before diving into implementation details.
+
+Dummy login details (seeded):
+
+Admin: admin@bridgebox.local / BridgeBox@123
+Teacher: teacher@bridgebox.local / BridgeBox@123
+Student: student@bridgebox.local / BridgeBox@123
