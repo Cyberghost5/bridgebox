@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Models\AdminActionLog;
 use App\Services\AdminActionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
 
 class AdminActionController extends Controller
 {

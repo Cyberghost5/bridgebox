@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BridgeBox Dashboard</title>
+    <link rel="stylesheet" href="{{ asset('assets/vendor/fontawesome/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/dashboard.css') }}">
 </head>
 <body>
@@ -18,34 +19,19 @@
             </div>
             <nav class="nav">
                 <button class="nav-item active" aria-label="Dashboard">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                        <path d="M3 10.5L12 3l9 7.5"></path>
-                        <path d="M5 9.5V21h14V9.5"></path>
-                    </svg>
+                    <i class="fa-solid fa-house" aria-hidden="true"></i>
                 </button>
                 <button class="nav-item" aria-label="Lessons">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                        <path d="M5 4h14a2 2 0 0 1 2 2v12H7a2 2 0 0 0-2 2V4z"></path>
-                        <path d="M7 8h10"></path>
-                        <path d="M7 12h6"></path>
-                    </svg>
+                    <i class="fa-solid fa-book-open" aria-hidden="true"></i>
                 </button>
                 <button class="nav-item" aria-label="Calendar">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                        <rect x="3" y="4" width="18" height="17" rx="2"></rect>
-                        <path d="M8 2v4M16 2v4M3 9h18"></path>
-                    </svg>
+                    <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
                 </button>
                 <button class="nav-item" aria-label="Folders">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                        <path d="M3 6h6l2 2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z"></path>
-                    </svg>
+                    <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
                 </button>
                 <button class="nav-item" aria-label="Settings">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                        <circle cx="12" cy="12" r="3.2"></circle>
-                        <path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a1.5 1.5 0 0 1-2.1 2.1l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V19a1.5 1.5 0 0 1-3 0v-.1a1 1 0 0 0-.7-.9 1 1 0 0 0-1.1.2l-.1.1a1.5 1.5 0 0 1-2.1-2.1l.1-.1a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H5a1.5 1.5 0 0 1 0-3h.1a1 1 0 0 0 .9-.7 1 1 0 0 0-.2-1.1l-.1-.1a1.5 1.5 0 1 1 2.1-2.1l.1.1a1 1 0 0 0 1.1.2 1 1 0 0 0 .6-.9V5a1.5 1.5 0 0 1 3 0v.1a1 1 0 0 0 .7.9 1 1 0 0 0 1.1-.2l.1-.1a1.5 1.5 0 1 1 2.1 2.1l-.1.1a1 1 0 0 0-.2 1.1 1 1 0 0 0 .9.6H19a1.5 1.5 0 0 1 0 3h-.1a1 1 0 0 0-.9.7z"></path>
-                    </svg>
+                    <i class="fa-solid fa-gear" aria-hidden="true"></i>
                 </button>
             </nav>
             <div class="sidebar-footer">
@@ -63,18 +49,11 @@
                 </div>
                 <div class="actions">
                     <button class="btn ghost">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                            <path d="M4 7h16"></path>
-                            <path d="M4 12h10"></path>
-                            <path d="M4 17h7"></path>
-                        </svg>
+                        <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
                         Create Quiz
                     </button>
                     <button class="btn primary">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                            <path d="M12 5v14"></path>
-                            <path d="M5 12h14"></path>
-                        </svg>
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i>
                         Add Content
                     </button>
                     <div class="avatar" aria-label="Profile">AE</div>
@@ -84,11 +63,7 @@
             <section class="quick-tabs">
                 <div class="tab" style="--accent: #4a7bd1; --d: 0.05s;">
                     <div class="tab-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                            <rect x="3" y="4" width="18" height="14" rx="2"></rect>
-                            <path d="M7 18v2"></path>
-                            <path d="M17 18v2"></path>
-                        </svg>
+                        <i class="fa-solid fa-users" aria-hidden="true"></i>
                     </div>
                     <div>
                         <p>Students</p>
@@ -97,11 +72,7 @@
                 </div>
                 <div class="tab" style="--accent: #e56b6f; --d: 0.1s;">
                     <div class="tab-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                            <path d="M4 6h16v12H4z"></path>
-                            <path d="M7 9h10"></path>
-                            <path d="M7 13h6"></path>
-                        </svg>
+                        <i class="fa-solid fa-file" aria-hidden="true"></i>
                     </div>
                     <div>
                         <p>Content Files</p>
@@ -110,11 +81,7 @@
                 </div>
                 <div class="tab" style="--accent: #f2b84b; --d: 0.15s;">
                     <div class="tab-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                            <path d="M7 3h10v4H7z"></path>
-                            <path d="M5 7h14v13H5z"></path>
-                            <path d="M9 11h6"></path>
-                        </svg>
+                        <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
                     </div>
                     <div>
                         <p>Pending Assignments</p>
@@ -139,11 +106,7 @@
                     </div>
                     <div class="subject-footer">
                         <div class="subject-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                                <path d="M4 5h16"></path>
-                                <path d="M4 12h16"></path>
-                                <path d="M4 19h16"></path>
-                            </svg>
+                            <i class="fa-solid fa-list" aria-hidden="true"></i>
                         </div>
                         <div>
                             <h3>Mathematics</h3>
@@ -159,10 +122,7 @@
                     </div>
                     <div class="subject-footer">
                         <div class="subject-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                                <path d="M6 4h8a4 4 0 0 1 4 4v12H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z"></path>
-                                <path d="M6 8h8"></path>
-                            </svg>
+                            <i class="fa-solid fa-book-open" aria-hidden="true"></i>
                         </div>
                         <div>
                             <h3>English Language</h3>
@@ -178,10 +138,7 @@
                     </div>
                     <div class="subject-footer">
                         <div class="subject-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                                <path d="M10 2v6l-5.5 9.5a3 3 0 0 0 2.6 4.5h9.8a3 3 0 0 0 2.6-4.5L14 8V2"></path>
-                                <path d="M8 8h8"></path>
-                            </svg>
+                            <i class="fa-solid fa-flask" aria-hidden="true"></i>
                         </div>
                         <div>
                             <h3>Basic Science</h3>
@@ -197,11 +154,7 @@
                     </div>
                     <div class="subject-footer">
                         <div class="subject-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                                <path d="M5 5h14v4H5z"></path>
-                                <path d="M7 9v10h10V9"></path>
-                                <path d="M12 12v4"></path>
-                            </svg>
+                            <i class="fa-solid fa-building-columns" aria-hidden="true"></i>
                         </div>
                         <div>
                             <h3>Social Studies</h3>

@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\Subject;
-use App\Models\SchoolClass;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 class SubjectFactory extends Factory
 {
@@ -12,10 +12,11 @@ class SubjectFactory extends Factory
 
     public function definition()
     {
+        $name = $this->faker->word();
+
         return [
-            'school_class_id' => SchoolClass::factory(),
-            'name' => $this->faker->word(),
-            'code' => strtoupper($this->faker->lexify('??')),
+            'name' => $name,
+            'code' => Str::slug($name),
             'description' => $this->faker->sentence(),
         ];
     }

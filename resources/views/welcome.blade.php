@@ -9,6 +9,7 @@
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+        <link rel="stylesheet" href="{{ asset('assets/vendor/fontawesome/css/all.min.css') }}">
 
         <!-- Styles / Scripts -->
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
@@ -65,20 +66,7 @@
                                 Read the
                                 <a href="https://laravel.com/docs" target="_blank" class="inline-flex items-center space-x-1 font-medium underline underline-offset-4 text-[#f53003] dark:text-[#FF4433] ml-1">
                                     <span>Documentation</span>
-                                    <svg
-                                        width="10"
-                                        height="11"
-                                        viewBox="0 0 10 11"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        class="w-2.5 h-2.5"
-                                    >
-                                        <path
-                                            d="M7.70833 6.95834V2.79167H3.54167M2.5 8L7.5 3.00001"
-                                            stroke="currentColor"
-                                            stroke-linecap="square"
-                                        />
-                                    </svg>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-xs" aria-hidden="true"></i>
                                 </a>
                             </span>
                         </li>
@@ -92,20 +80,7 @@
                                 Watch video tutorials at
                                 <a href="https://laracasts.com" target="_blank" class="inline-flex items-center space-x-1 font-medium underline underline-offset-4 text-[#f53003] dark:text-[#FF4433] ml-1">
                                     <span>Laracasts</span>
-                                    <svg
-                                        width="10"
-                                        height="11"
-                                        viewBox="0 0 10 11"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        class="w-2.5 h-2.5"
-                                    >
-                                        <path
-                                            d="M7.70833 6.95834V2.79167H3.54167M2.5 8L7.5 3.00001"
-                                            stroke="currentColor"
-                                            stroke-linecap="square"
-                                        />
-                                    </svg>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-xs" aria-hidden="true"></i>
                                 </a>
                             </span>
                         </li>

@@ -1,0 +1,121 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Models\Lesson;
+use App\Models\Topic;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\View\View;
+use App\Http\Controllers\Controller;
+
+class AdminTopicLessonController extends Controller
+{
+    public function index(Topic $topic): View
+    {
+        $lessons = $topic->lessons()
+            ->orderBy('created_at')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('admin.topics.lessons.index', [
+            'topic' => $topic,
+            'lessons' => $lessons,
+        ]);
+    }
+
+    public function create(Topic $topic): View
+    {
+        return view('admin.topics.lessons.create', [
+            'topic' => $topic,
+        ]);
+    }
+
+    public function store(Request $request, Topic $topic): RedirectResponse
+    {
+        $data = $request->validate([
+            'title' => 'required|string|max:191',
+            'content' => 'nullable|string',
+            'file' => 'nullable|file|max:51200|mimetypes:application/pdf,video/mp4,video/webm,video/ogg',
+        ]);
+
+        $content = trim((string) ($data['content'] ?? ''));
+        $file = $request->file('file');
+
+        if ($content === '' && !$file) {
+            return back()
+                ->withErrors(['content' => 'Provide lesson text or upload a file.'])
+                ->withInput();
+        }
+
+        $filePath = null;
+        $fileName = null;
+        $fileType = null;
+
+        if ($file) {
+            $originalName = $file->getClientOriginalName();
+            $extension = $file->getClientOriginalExtension();
+            $storedName = Str::uuid()->toString();
+            if ($extension !== '') {
+                $storedName .= '.' . $extension;
+            }
+
+            $filePath = $file->storeAs('lessons', $storedName, 'local');
+            $fileName = $originalName;
+            $fileType = $file->getClientMimeType();
+        }
+
+        $topic->lessons()->create([
+            'title' => $data['title'],
+            'content' => $content !== '' ? $content : null,
+            'file_path' => $filePath,
+            'file_name' => $fileName,
+            'file_type' => $fileType,
+        ]);
+
+        return redirect()
+            ->route('admin.topics.lessons.index', $topic)
+            ->with([
+                'status' => 'success',
+                'message' => 'Lesson added to topic.',
+            ]);
+    }
+
+    public function download(Topic $topic, Lesson $lesson)
+    {
+        $this->assertLessonTopic($topic, $lesson);
+
+        if (!$lesson->file_path || !Storage::disk('local')->exists($lesson->file_path)) {
+            abort(404);
+        }
+
+        $downloadName = $lesson->file_name ?: basename($lesson->file_path);
+
+        return Storage::disk('local')->download($lesson->file_path, $downloadName);
+    }
+
+    public function destroy(Topic $topic, Lesson $lesson): RedirectResponse
+    {
+        $this->assertLessonTopic($topic, $lesson);
+
+        if ($lesson->file_path && Storage::disk('local')->exists($lesson->file_path)) {
+            Storage::disk('local')->delete($lesson->file_path);
+        }
+
+        $lesson->delete();
+
+        return back()->with([
+            'status' => 'success',
+            'message' => 'Lesson deleted.',
+        ]);
+    }
+
+    private function assertLessonTopic(Topic $topic, Lesson $lesson): void
+    {
+        if ($lesson->topic_id !== $topic->id) {
+            abort(404);
+        }
+    }
+}

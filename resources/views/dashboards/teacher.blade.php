@@ -1,166 +1,185 @@
-﻿<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BridgeBox Teacher Dashboard</title>
-    <link rel="stylesheet" href="{{ asset('assets/css/dashboard.css') }}">
-</head>
-<body>
-    <div class="page">
-        <aside class="sidebar">
-            <div class="brand">
-                <div class="brand-mark">
-                    <img class="brand-logo" src="{{ asset('assets/images/favicon.png') }}" alt="BridgeBox logo">
-                    <!-- <span></span>
-                    <span></span> -->
+@extends('teacher.layout')
+
+@section('title', 'Teacher Dashboard')
+
+@section('main')
+    <main class="main teacher-dashboard">
+        <section class="teacher-hero">
+            <div class="teacher-hero-content">
+                <p class="eyebrow">Teacher Console</p>
+                <h1>Welcome back, {{ auth()->user()->name ?? 'Teacher' }}.</h1>
+                <p class="subtext">Manage students, lessons, and assessments with clear visibility.</p>
+
+                <div class="teacher-hero-actions">
+                    <a class="btn primary" href="{{ route('teacher.assignments.create') }}">New Assignment</a>
+                    <a class="btn ghost" href="{{ route('teacher.quizzes.create') }}">New Quiz</a>
+                    <a class="btn ghost" href="{{ route('teacher.exams.create') }}">New Exam</a>
+                    <a class="btn ghost" href="{{ route('teacher.topics.create') }}">Add Topic</a>
                 </div>
-                <span class="brand-name">BridgeBox</span>
             </div>
-            <nav class="nav">
-                <button class="nav-item active" aria-label="Teacher overview">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                        <path d="M3 10.5L12 3l9 7.5"></path>
-                        <path d="M5 9.5V21h14V9.5"></path>
-                    </svg>
-                </button>
-                <button class="nav-item" aria-label="Lessons">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                        <path d="M5 4h14a2 2 0 0 1 2 2v12H7a2 2 0 0 0-2 2V4z"></path>
-                        <path d="M7 8h10"></path>
-                        <path d="M7 12h6"></path>
-                    </svg>
-                </button>
-                <button class="nav-item" aria-label="Calendar">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                        <rect x="3" y="4" width="18" height="17" rx="2"></rect>
-                        <path d="M8 2v4M16 2v4M3 9h18"></path>
-                    </svg>
-                </button>
-                <button class="nav-item" aria-label="Settings">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                        <circle cx="12" cy="12" r="3.2"></circle>
-                        <path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a1.5 1.5 0 0 1-2.1 2.1l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V19a1.5 1.5 0 0 1-3 0v-.1a1 1 0 0 0-.7-.9 1 1 0 0 0-1.1.2l-.1.1a1.5 1.5 0 0 1-2.1-2.1l.1-.1a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H5a1.5 1.5 0 0 1 0-3h.1a1 1 0 0 0 .9-.7 1 1 0 0 0-.2-1.1l-.1-.1a1.5 1.5 0 1 1 2.1-2.1l.1.1a1 1 0 0 0 1.1.2 1 1 0 0 0 .6-.9V5a1.5 1.5 0 0 1 3 0v.1a1 1 0 0 0 .7.9 1 1 0 0 0 1.1-.2l.1-.1a1.5 1.5 0 1 1 2.1 2.1l-.1.1a1 1 0 0 0-.2 1.1 1 1 0 0 0 .9.6H19a1.5 1.5 0 0 1 0 3h-.1a1 1 0 0 0-.9.7z"></path>
-                    </svg>
-                </button>
-            </nav>
-            <div class="sidebar-footer">
-                <div class="status-dot"></div>
-                <span>Online</span>
+            <div class="teacher-hero-panel">
+                <div class="teacher-class-card">
+                    <div>
+                        <p class="teacher-class-label">Assigned Class</p>
+                        <h3>{{ $teacherClass?->name ?? 'No class assigned' }}</h3>
+                        <p class="teacher-class-meta">
+                            {{ $teacherClass?->description ?: 'Assign a class to unlock student lists and class-specific content.' }}
+                        </p>
+                    </div>
+                    <div class="teacher-class-stats">
+                        <div>
+                            <span>Students</span>
+                            <strong>{{ $stats['students'] }}</strong>
+                        </div>
+                        <div>
+                            <span>Topics</span>
+                            <strong>{{ $stats['topics'] }}</strong>
+                        </div>
+                        <div>
+                            <span>Assignments</span>
+                            <strong>{{ $stats['assignments'] }}</strong>
+                        </div>
+                    </div>
+                    <a class="btn ghost btn-small" href="{{ route('teacher.students.index') }}">View Students</a>
+                </div>
             </div>
-        </aside>
+        </section>
 
-        <main class="main">
-            <header class="topbar">
-                <div class="greeting">
-                    <p class="eyebrow">Teacher Workspace</p>
-                    <h1>Hello, {{ auth()->user()->name ?? 'Teacher' }}.</h1>
-                    <p class="subtext">Your lessons, learners, and resources in one flow.</p>
-                </div>
-                <div class="actions">
-                    <button class="btn ghost">Create Lesson</button>
-                    <form action="{{ route('logout') }}" method="post">
-                        @csrf
-                        <button class="btn primary" type="submit">Logout</button>
-                    </form>
-                </div>
-            </header>
+        <section class="teacher-metrics">
+            <a class="metric-card" href="{{ route('teacher.students.index') }}">
+                <p>Students</p>
+                <h2>{{ $stats['students'] }}</h2>
+                <span>In your class</span>
+            </a>
+            <a class="metric-card" href="{{ route('teacher.classes.index') }}">
+                <p>Classes</p>
+                <h2>{{ $stats['classes'] }}</h2>
+                <span>Assigned</span>
+            </a>
+            <a class="metric-card" href="{{ route('teacher.subjects.index') }}">
+                <p>Subjects</p>
+                <h2>{{ $stats['subjects'] }}</h2>
+                <span>Total available</span>
+            </a>
+            <a class="metric-card" href="{{ route('teacher.topics.index') }}">
+                <p>Topics</p>
+                <h2>{{ $stats['topics'] }}</h2>
+                <span>For your class</span>
+            </a>
+            <a class="metric-card" href="{{ route('teacher.assignments.index') }}">
+                <p>Assignments</p>
+                <h2>{{ $stats['assignments'] }}</h2>
+                <span>Active</span>
+            </a>
+            <a class="metric-card" href="{{ route('teacher.quizzes.index') }}">
+                <p>Quizzes</p>
+                <h2>{{ $stats['quizzes'] }}</h2>
+                <span>Ready</span>
+            </a>
+            <a class="metric-card" href="{{ route('teacher.exams.index') }}">
+                <p>Exams</p>
+                <h2>{{ $stats['exams'] }}</h2>
+                <span>Scheduled</span>
+            </a>
+        </section>
 
-            <section class="quick-tabs">
-                <div class="tab" style="--accent: #4a7bd1; --d: 0.05s;">
-                    <div class="tab-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                            <path d="M4 6h16v12H4z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <p>Active Classes</p>
-                        <span>6 sections</span>
-                    </div>
-                </div>
-                <div class="tab" style="--accent: #e56b6f; --d: 0.1s;">
-                    <div class="tab-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                            <path d="M7 3h10v4H7z"></path>
-                            <path d="M5 7h14v13H5z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <p>Assignments</p>
-                        <span>18 pending</span>
-                    </div>
-                </div>
-                <div class="tab" style="--accent: #f2b84b; --d: 0.15s;">
-                    <div class="tab-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                            <path d="M5 4h14a2 2 0 0 1 2 2v12H7a2 2 0 0 0-2 2V4z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <p>Lesson Packs</p>
-                        <span>4 new uploads</span>
-                    </div>
-                </div>
-                <div class="tab" style="--accent: #56c1a7; --d: 0.2s;">
-                    <div class="tab-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                            <path d="M4 4h16v16H4z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <p>Attendance</p>
-                        <span>92% today</span>
-                    </div>
-                </div>
-            </section>
-
-            <section class="panel table-panel">
+        <section class="teacher-lanes">
+            <div class="panel teacher-panel">
                 <div class="panel-header">
-                    <h4>Teacher Module Table</h4>
-                    <span class="badge teal">This Week</span>
+                    <h4>Recent Assignments</h4>
+                    <a class="btn ghost btn-small" href="{{ route('teacher.assignments.index') }}">View all</a>
                 </div>
-                <div class="panel-body table-scroll">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Class</th>
-                                <th>Topic</th>
-                                <th>Next Session</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>JSS 2A</td>
-                                <td>Fractions Review</td>
-                                <td>Wed 10:00 AM</td>
-                                <td><span class="badge green">Ready</span></td>
-                            </tr>
-                            <tr>
-                                <td>JSS 3B</td>
-                                <td>Reading Lab</td>
-                                <td>Thu 1:30 PM</td>
-                                <td><span class="badge gold">Draft</span></td>
-                            </tr>
-                            <tr>
-                                <td>SSS 1</td>
-                                <td>Intro to Biology</td>
-                                <td>Fri 9:00 AM</td>
-                                <td><span class="badge blue">Scheduled</span></td>
-                            </tr>
-                            <tr>
-                                <td>SSS 2</td>
-                                <td>Algebra Practice</td>
-                                <td>Fri 12:00 PM</td>
-                                <td><span class="badge teal">Shared</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="panel-body">
+                    @forelse ($recentAssignments as $assignment)
+                        <div class="teacher-item">
+                            <div>
+                                <p>{{ $assignment->title }}</p>
+                                <span>{{ $assignment->lesson?->topic?->title ?? 'No topic' }}</span>
+                            </div>
+                            <div class="teacher-item-meta">
+                                <span>Due</span>
+                                <strong>{{ $assignment->due_at?->format('M d') ?? '-' }}</strong>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-muted">No assignments yet.</p>
+                    @endforelse
                 </div>
-            </section>
-        </main>
-    </div>
+            </div>
 
-    <script src="{{ asset('assets/js/dashboard.js') }}"></script>
-</body>
-</html>
+            <div class="panel teacher-panel">
+                <div class="panel-header">
+                    <h4>Recent Quizzes & Exams</h4>
+                    <a class="btn ghost btn-small" href="{{ route('teacher.quizzes.index') }}">View all</a>
+                </div>
+                <div class="panel-body">
+                    @forelse ($recentAssessments as $assessment)
+                        <div class="teacher-item">
+                            <div>
+                                <p>{{ $assessment->title }}</p>
+                                <span>{{ ucfirst($assessment->type) }} • {{ $assessment->subject?->name ?? 'No subject' }}</span>
+                            </div>
+                            <div class="teacher-item-meta">
+                                <span>Time</span>
+                                <strong>{{ $assessment->time_limit_minutes ? $assessment->time_limit_minutes . 'm' : '-' }}</strong>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-muted">No assessments yet.</p>
+                    @endforelse
+                </div>
+            </div>
+
+            <div class="panel teacher-panel teacher-panel-wide">
+                <div class="panel-header">
+                    <h4>Quick Access</h4>
+                    <span class="badge blue">Manage</span>
+                </div>
+                <div class="panel-body teacher-quick-grid">
+                    <a class="teacher-quick-card" href="{{ route('teacher.students.index') }}">
+                        <div>
+                            <p>Students</p>
+                            <span>Manage class roster</span>
+                        </div>
+                        <i class="fa-solid fa-user-graduate" aria-hidden="true"></i>
+                    </a>
+                    <a class="teacher-quick-card" href="{{ route('teacher.topics.index') }}">
+                        <div>
+                            <p>Topics</p>
+                            <span>Organize learning units</span>
+                        </div>
+                        <i class="fa-solid fa-list-check" aria-hidden="true"></i>
+                    </a>
+                    <a class="teacher-quick-card" href="{{ route('teacher.assignments.index') }}">
+                        <div>
+                            <p>Assignments</p>
+                            <span>Track submissions</span>
+                        </div>
+                        <i class="fa-solid fa-file-lines" aria-hidden="true"></i>
+                    </a>
+                    <a class="teacher-quick-card" href="{{ route('teacher.quizzes.index') }}">
+                        <div>
+                            <p>Quizzes</p>
+                            <span>Build quick checks</span>
+                        </div>
+                        <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
+                    </a>
+                    <a class="teacher-quick-card" href="{{ route('teacher.exams.index') }}">
+                        <div>
+                            <p>Exams</p>
+                            <span>Formal evaluations</span>
+                        </div>
+                        <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
+                    </a>
+                    <a class="teacher-quick-card" href="{{ route('teacher.subjects.index') }}">
+                        <div>
+                            <p>Subjects</p>
+                            <span>Curriculum catalog</span>
+                        </div>
+                        <i class="fa-solid fa-book" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+@endsection

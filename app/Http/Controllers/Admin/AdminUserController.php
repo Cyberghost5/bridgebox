@@ -1,10 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Requests\StoreTeacherRequest;
 use App\Http\Requests\StoreStudentRequest;
+use App\Http\Requests\UpdateTeacherRequest;
+use App\Http\Requests\UpdateStudentRequest;
 use App\Models\AdminActionLog;
+use App\Models\SchoolClass;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -12,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 class AdminUserController extends Controller
 {
@@ -26,6 +30,7 @@ class AdminUserController extends Controller
 
         $teachers = User::query()
             ->where('role', User::ROLE_TEACHER)
+            ->with('schoolClass')
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery->where('name', 'like', '%' . $search . '%')
@@ -48,7 +53,7 @@ class AdminUserController extends Controller
 
         $students = User::query()
             ->where('role', User::ROLE_STUDENT)
-            ->with('studentProfile')
+            ->with(['studentProfile', 'schoolClass'])
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery->where('name', 'like', '%' . $search . '%')
@@ -67,24 +72,30 @@ class AdminUserController extends Controller
 
     public function createStudent(): View
     {
-        return view('admin.users.students.create');
+        return view('admin.users.students.create', [
+            'classes' => SchoolClass::orderBy('name')->get(),
+        ]);
     }
 
     public function createTeacher(): View
     {
-        return view('admin.users.teachers.create');
+        return view('admin.users.teachers.create', [
+            'classes' => SchoolClass::orderBy('name')->get(),
+        ]);
     }
 
     public function storeTeacher(StoreTeacherRequest $request): RedirectResponse
     {
         $autoGenerate = $request->boolean('auto_generate');
         $plainPassword = $autoGenerate ? Str::random(12) : $request->string('password')->toString();
+        $classId = $request->integer('school_class_id');
 
         $teacher = User::create([
             'name' => $request->string('name')->toString(),
             'email' => $request->string('email')->toString(),
             'phone' => $request->string('phone')->toString(),
             'role' => User::ROLE_TEACHER,
+            'school_class_id' => $classId ?: null,
             'password' => Hash::make($plainPassword),
         ]);
 
@@ -107,22 +118,63 @@ class AdminUserController extends Controller
         ]);
     }
 
+    public function editTeacher(User $user): View
+    {
+        abort_unless($user->role === User::ROLE_TEACHER, 404);
+
+        return view('admin.users.teachers.edit', [
+            'teacher' => $user->load('schoolClass'),
+            'classes' => SchoolClass::orderBy('name')->get(),
+        ]);
+    }
+
+    public function updateTeacher(UpdateTeacherRequest $request, User $user): RedirectResponse
+    {
+        abort_unless($user->role === User::ROLE_TEACHER, 404);
+
+        $data = $request->validated();
+        $password = $request->string('password')->toString();
+
+        $user->fill([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'phone' => $data['phone'] ?? null,
+            'school_class_id' => (int) $data['school_class_id'],
+        ]);
+
+        if ($password !== '') {
+            $user->password = Hash::make($password);
+        }
+
+        $user->save();
+
+        return redirect()
+            ->route('admin.users.teachers.index')
+            ->with([
+                'status' => 'success',
+                'message' => 'Teacher updated successfully.',
+            ]);
+    }
+
     public function storeStudent(StoreStudentRequest $request): RedirectResponse
     {
         $autoGenerate = $request->boolean('auto_generate');
         $plainPassword = $autoGenerate ? Str::random(12) : $request->string('password')->toString();
+        $classId = $request->integer('school_class_id');
+        $selectedClass = $classId ? SchoolClass::find($classId) : null;
         $profileData = array_filter([
-            'class' => $request->input('class'),
+            'class' => $selectedClass?->name,
             'department' => $request->input('department'),
             'admission_id' => $request->input('admission_id'),
         ], static fn ($value) => $value !== null && $value !== '');
 
-        $student = DB::transaction(function () use ($request, $plainPassword, $profileData) {
+        $student = DB::transaction(function () use ($request, $plainPassword, $profileData, $classId) {
             $student = User::create([
                 'name' => $request->string('name')->toString(),
                 'email' => $request->string('email')->toString(),
                 'phone' => $request->string('phone')->toString(),
                 'role' => User::ROLE_STUDENT,
+                'school_class_id' => $classId ?: null,
                 'password' => Hash::make($plainPassword),
             ]);
 
@@ -151,6 +203,62 @@ class AdminUserController extends Controller
             'generatedPassword' => session('generated_password'),
             'passwordMode' => session('password_mode', 'manual'),
         ]);
+    }
+
+    public function editStudent(User $user): View
+    {
+        abort_unless($user->role === User::ROLE_STUDENT, 404);
+
+        return view('admin.users.students.edit', [
+            'student' => $user->load(['studentProfile', 'schoolClass']),
+            'classes' => SchoolClass::orderBy('name')->get(),
+        ]);
+    }
+
+    public function updateStudent(UpdateStudentRequest $request, User $user): RedirectResponse
+    {
+        abort_unless($user->role === User::ROLE_STUDENT, 404);
+
+        $data = $request->validated();
+        $password = $request->string('password')->toString();
+        $classId = (int) $data['school_class_id'];
+        $selectedClass = SchoolClass::find($classId);
+
+        $student = DB::transaction(function () use ($user, $data, $password, $classId, $selectedClass) {
+            $user->fill([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'phone' => $data['phone'] ?? null,
+                'school_class_id' => $classId,
+            ]);
+
+            if ($password !== '') {
+                $user->password = Hash::make($password);
+            }
+
+            $user->save();
+
+            $profileData = [
+                'class' => $selectedClass?->name,
+                'department' => ($data['department'] ?? '') !== '' ? $data['department'] : null,
+                'admission_id' => ($data['admission_id'] ?? '') !== '' ? $data['admission_id'] : null,
+            ];
+
+            if ($user->studentProfile) {
+                $user->studentProfile->update($profileData);
+            } else {
+                $user->studentProfile()->create($profileData);
+            }
+
+            return $user;
+        });
+
+        return redirect()
+            ->route('admin.users.students.index')
+            ->with([
+                'status' => 'success',
+                'message' => 'Student updated successfully.',
+            ]);
     }
 
     public function toggleStatus(User $user): RedirectResponse

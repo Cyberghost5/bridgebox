@@ -1,356 +1,207 @@
-﻿<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BridgeBox Admin Dashboard</title>
-    <link rel="stylesheet" href="{{ asset('assets/css/dashboard.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/bootstrap-alerts.css') }}">
-</head>
-<body>
-    <div class="page">
-        <aside class="sidebar">
-            <div class="brand">
-                <div class="brand-mark">
-                    <img class="brand-logo" src="{{ asset('assets/images/favicon.png') }}" alt="BridgeBox logo">
-                    <!-- <span></span>
-                    <span></span> -->
-                </div>
-                <span class="brand-name">BridgeBox</span>
-            </div>
-            <nav class="nav">
-                <a class="nav-item active" href="{{ route('dashboard.admin') }}" aria-label="Admin control room">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                        <path d="M3 10.5L12 3l9 7.5"></path>
-                        <path d="M5 9.5V21h14V9.5"></path>
-                    </svg>
-                </a>
-                <a class="nav-item" href="{{ route('admin.users.teachers.index') }}" aria-label="Manage teachers">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                        <path d="M4 7h16"></path>
-                        <path d="M4 12h16"></path>
-                        <path d="M4 17h10"></path>
-                    </svg>
-                </a>
-                <a class="nav-item" href="{{ route('admin.users.students.index') }}" aria-label="Manage students">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M2 21a7 7 0 0 1 14 0"></path>
-                        <circle cx="17" cy="7" r="3"></circle>
-                        <path d="M16 14a6 6 0 0 1 6 6"></path>
-                    </svg>
-                </a>
-                <a class="nav-item" href="{{ route('admin.classes.index') }}" aria-label="Manage classes">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                        <path d="M4 6h16v12H4z"></path>
-                        <path d="M7 9h10"></path>
-                    </svg>
-                </a>
-                <button class="nav-item" aria-label="System status">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                        <path d="M4 18l6-6 4 4 6-8"></path>
-                    </svg>
-                </button>
-                <button class="nav-item" aria-label="Admin actions">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                        <path d="M4 6h16v12H4z"></path>
-                        <path d="M7 9h10"></path>
-                        <path d="M7 13h6"></path>
-                    </svg>
-                </button>
-            </nav>
-            <div class="sidebar-footer">
-                <div class="status-dot"></div>
-                <span>Admin</span>
-            </div>
-        </aside>
+@extends('admin.layout')
 
-        <main class="main" data-refresh-url="{{ route('dashboard.admin.status') }}" data-refresh-interval="1000" data-auto-refresh="on">
-            <header class="topbar">
-                <div class="greeting">
-                    <p class="eyebrow">Admin Control Room</p>
-                    <h1>Welcome, {{ auth()->user()->name ?? 'Admin' }}.</h1>
-                    <p class="subtext">Monitor system health and manage critical services.</p>
+@section('title', 'Admin Dashboard')
+
+@php
+    $status = $status ?? [];
+    $sudoAllowed = $sudoAllowed ?? false;
+    $sudoBlocked = ! $sudoAllowed;
+    $serverRunning = ($status['server'] ?? '') === 'Running';
+    $hotspotLabel = strtolower((string) ($status['hotspot'] ?? ''));
+    $hotspotOn = str_starts_with($hotspotLabel, 'on');
+@endphp
+
+@section('main')
+    <main class="main" data-refresh-url="{{ route('dashboard.admin.status') }}" data-refresh-interval="1000" data-auto-refresh="on">
+        <header class="topbar">
+            <div class="greeting">
+                <p class="eyebrow">Admin Control Room</p>
+                <h1>Hello, {{ auth()->user()->name ?? 'Admin' }}.</h1>
+                <p class="subtext">Monitor core services and manage system controls.</p>
+            </div>
+            <div class="actions">
+                <a class="btn ghost" href="{{ route('admin.users.teachers.index') }}">Teachers</a>
+                <a class="btn ghost" href="{{ route('admin.users.students.index') }}">Students</a>
+                <a class="btn ghost" href="{{ route('admin.classes.index') }}">Classes</a>
+                <form action="{{ route('logout') }}" method="post">
+                    @csrf
+                    <button class="btn primary" type="submit">Logout</button>
+                </form>
+            </div>
+        </header>
+
+        @if (session('action_message'))
+            <div class="alert alert-dismissible {{ session('action_status') === 'success' ? 'alert-success' : 'alert-error' }}" role="status" data-auto-dismiss="4000">
+                <span data-alert-message>{{ session('action_message') }}</span>
+                <button class="alert-close" type="button" data-alert-close data-bs-dismiss="alert" aria-label="Dismiss alert">&times;</button>
+            </div>
+        @endif
+
+        <div class="alert alert-dismissible" id="action-alert" role="status" hidden>
+            <span data-alert-message></span>
+            <button class="alert-close" type="button" data-alert-close data-bs-dismiss="alert" aria-label="Dismiss alert">&times;</button>
+        </div>
+
+        <section class="quick-tabs">
+            <div class="tab" style="--accent: #4a7bd1; --d: 0.05s;">
+                <div class="tab-icon">
+                    <i class="fa-solid fa-server" aria-hidden="true"></i>
                 </div>
-                <div class="actions">
-                    <form action="{{ route('logout') }}" method="post">
+                <div>
+                    <p>Server Status</p>
+                    <span data-status="server">{{ $status['server'] ?? 'Unknown' }}</span>
+                </div>
+            </div>
+            <div class="tab" style="--accent: #e56b6f; --d: 0.1s;">
+                <div class="tab-icon">
+                    <i class="fa-solid fa-wifi" aria-hidden="true"></i>
+                </div>
+                <div>
+                    <p>Hotspot Status</p>
+                    <span data-status="hotspot">{{ $status['hotspot'] ?? 'Unknown' }}</span>
+                </div>
+            </div>
+            <div class="tab" style="--accent: #f2b84b; --d: 0.15s;">
+                <div class="tab-icon">
+                    <i class="fa-solid fa-network-wired" aria-hidden="true"></i>
+                </div>
+                <div>
+                    <p>Connected Devices</p>
+                    <span data-status="devices">{{ $status['devices'] ?? 'Unknown' }}</span>
+                </div>
+            </div>
+            <div class="tab" style="--accent: #56c1a7; --d: 0.2s;">
+                <div class="tab-icon">
+                    <i class="fa-solid fa-heart-pulse" aria-hidden="true"></i>
+                </div>
+                <div>
+                    <p>App Health</p>
+                    <span data-status="app_health">{{ $status['app_health'] ?? 'Unknown' }}</span>
+                </div>
+            </div>
+            <div class="tab" style="--accent: #5b8de3; --d: 0.25s;">
+                <div class="tab-icon">
+                    <i class="fa-solid fa-hard-drive" aria-hidden="true"></i>
+                </div>
+                <div>
+                    <p>Storage</p>
+                    <span data-status="storage">{{ $status['storage'] ?? 'Unknown' }}</span>
+                </div>
+            </div>
+            <div class="tab" style="--accent: #f08b5a; --d: 0.3s;">
+                <div class="tab-icon">
+                    <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+                </div>
+                <div>
+                    <p>Power Health</p>
+                    <span data-status="power">{{ $status['power'] ?? 'Unknown' }}</span>
+                </div>
+            </div>
+            <div class="tab" style="--accent: #3bb98d; --d: 0.35s;">
+                <div class="tab-icon">
+                    <i class="fa-solid fa-clock" aria-hidden="true"></i>
+                </div>
+                <div>
+                    <p>Uptime</p>
+                    <span data-status="uptime" data-uptime-seconds="{{ $status['uptime_seconds'] ?? '' }}">{{ $status['uptime'] ?? 'Unknown' }}</span>
+                </div>
+            </div>
+            <div class="tab" style="--accent: #e45757; --d: 0.4s;">
+                <div class="tab-icon">
+                    <i class="fa-solid fa-calendar-check" aria-hidden="true"></i>
+                </div>
+                <div>
+                    <p>Last Update</p>
+                    <span data-status="last_update">{{ $status['last_update'] ?? 'Unknown' }}</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header">
+                <h4>Admin Controls</h4>
+                <span class="badge gold">Actions</span>
+            </div>
+            <div class="panel-body">
+                <div class="item">
+                    <div class="item-info">
+                        <p>Server</p>
+                        <span>nginx + php-fpm services</span>
+                    </div>
+                    <form class="toggle-form" data-admin-toggle data-action-on="{{ route('dashboard.admin.actions', ['action' => 'start_server']) }}" data-action-off="{{ route('dashboard.admin.actions', ['action' => 'stop_server']) }}" data-confirm-on="Start the server services?" data-confirm-off="Stop the server services?" method="post">
                         @csrf
-                        <button class="btn primary" type="submit">Logout</button>
+                        <label class="toggle">
+                            <input type="checkbox" data-toggle-input data-toggle-target="server" @checked($serverRunning) @disabled($sudoBlocked)>
+                            <span class="toggle-track"></span>
+                        </label>
                     </form>
                 </div>
-            </header>
-
-            @php
-                $flashStatus = session('action_status');
-                $flashMessage = session('action_message');
-                $actionsDisabled = !$actionsEnabled;
-                $sudoBlocked = (!$actionsEnabled) || (!$sudoAllowed);
-                $serverRunning = str_contains(strtolower($status['server'] ?? ''), 'running');
-                $hotspotOn = str_starts_with(strtolower($status['hotspot'] ?? ''), 'on');
-            @endphp
-            <div id="action-alert" class="alert alert-dismissible {{ $flashStatus === 'success' ? 'alert-success' : ($flashStatus === 'error' ? 'alert-error' : '') }}" role="status" aria-live="polite" data-auto-dismiss="4000" @if (!$flashMessage) hidden @endif>
-                <span data-alert-message>{{ $flashMessage }}</span>
-                <button class="alert-close" type="button" data-alert-close data-bs-dismiss="alert" aria-label="Dismiss alert">×</button>
-            </div>
-            @if (!$actionsEnabled)
-                <div class="alert alert-warning">
-                    Admin actions are disabled. Set <code>ADMIN_ACTIONS_ENABLED=true</code> in <code>.env</code> to enable them.
+                <div class="item">
+                    <div class="item-info">
+                        <p>Hotspot Control</p>
+                        <span>Turn hotspot on/off</span>
+                    </div>
+                    <form class="toggle-form" data-admin-toggle data-action-on="{{ route('dashboard.admin.actions', ['action' => 'hotspot_on']) }}" data-action-off="{{ route('dashboard.admin.actions', ['action' => 'hotspot_off']) }}" data-confirm-on="Turn hotspot on?" data-confirm-off="Turn hotspot off?" method="post">
+                        @csrf
+                        <label class="toggle">
+                            <input type="checkbox" data-toggle-input data-toggle-target="hotspot" @checked($hotspotOn) @disabled($sudoBlocked)>
+                            <span class="toggle-track"></span>
+                        </label>
+                    </form>
                 </div>
-            @elseif (!$sudoAllowed)
-                <div class="alert alert-warning">
-                    Sudo actions are disabled. Configure sudoers and set <code>ADMIN_ACTIONS_ALLOW_SUDO=true</code> to allow system commands.
-                </div>
-            @endif
-
-            <section class="quick-tabs">
-                <div class="tab" style="--accent: #4a7bd1; --d: 0.05s;">
-                    <div class="tab-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                            <rect x="3" y="4" width="18" height="14" rx="2"></rect>
-                        </svg>
+                <div class="item">
+                    <div class="item-info">
+                        <p>Power Actions</p>
+                        <span>Reboot or shutdown device</span>
                     </div>
-                    <div>
-                        <p>Server Status</p>
-                        <span data-status="server">{{ $status['server'] ?? 'Unknown' }}</span>
-                    </div>
-                </div>
-                <div class="tab" style="--accent: #e56b6f; --d: 0.1s;">
-                    <div class="tab-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                            <path d="M3 7h18"></path>
-                            <path d="M3 12h18"></path>
-                            <path d="M3 17h18"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <p>Hotspot Status</p>
-                        <span data-status="hotspot">{{ $status['hotspot'] ?? 'Unknown' }}</span>
-                    </div>
-                </div>
-                <div class="tab" style="--accent: #f2b84b; --d: 0.15s;">
-                    <div class="tab-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                            <path d="M4 6h16v12H4z"></path>
-                            <path d="M7 9h10"></path>
-                            <path d="M7 13h6"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <p>Connected Devices</p>
-                        <span data-status="devices">{{ $status['devices'] ?? 'Unknown' }}</span>
-                    </div>
-                </div>
-                <div class="tab" style="--accent: #56c1a7; --d: 0.2s;">
-                    <div class="tab-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                            <path d="M4 4h16v16H4z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <p>App Health</p>
-                        <span data-status="app_health">{{ $status['app_health'] ?? 'Unknown' }}</span>
-                    </div>
-                </div>
-                <div class="tab" style="--accent: #5b8de3; --d: 0.25s;">
-                    <div class="tab-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                            <path d="M3 6h18v12H3z"></path>
-                            <path d="M8 18v2"></path>
-                            <path d="M16 18v2"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <p>Storage</p>
-                        <span data-status="storage">{{ $status['storage'] ?? 'Unknown' }}</span>
-                    </div>
-                </div>
-                <div class="tab" style="--accent: #f08b5a; --d: 0.3s;">
-                    <div class="tab-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                            <path d="M12 2v6"></path>
-                            <path d="M8 4h8"></path>
-                            <path d="M6 8h12"></path>
-                            <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <p>Power Health</p>
-                        <span data-status="power">{{ $status['power'] ?? 'Unknown' }}</span>
-                    </div>
-                </div>
-                <div class="tab" style="--accent: #3bb98d; --d: 0.35s;">
-                    <div class="tab-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                            <circle cx="12" cy="12" r="9"></circle>
-                            <path d="M12 7v6l3 3"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <p>Uptime</p>
-                        <span data-status="uptime" data-uptime-seconds="{{ $status['uptime_seconds'] ?? '' }}">{{ $status['uptime'] ?? 'Unknown' }}</span>
-                    </div>
-                </div>
-                <div class="tab" style="--accent: #e45757; --d: 0.4s;">
-                    <div class="tab-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                            <path d="M6 2v4"></path>
-                            <path d="M18 2v4"></path>
-                            <rect x="3" y="4" width="18" height="17" rx="2"></rect>
-                            <path d="M3 9h18"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <p>Last Update</p>
-                        <span data-status="last_update">{{ $status['last_update'] ?? 'Unknown' }}</span>
-                    </div>
-                </div>
-            </section>
-
-            <section class="panel">
-                <div class="panel-header">
-                    <h4>Admin Controls</h4>
-                    <span class="badge gold">Actions</span>
-                </div>
-                <div class="panel-body">
-                    <div class="item">
-                        <div class="item-info">
-                            <p>Server</p>
-                            <span>nginx + php-fpm services</span>
-                        </div>
-                        <form class="toggle-form" data-admin-toggle data-action-on="{{ route('dashboard.admin.actions', ['action' => 'start_server']) }}" data-action-off="{{ route('dashboard.admin.actions', ['action' => 'stop_server']) }}" data-confirm-on="Start the server services?" data-confirm-off="Stop the server services?" method="post">
+                    <div class="inline-actions">
+                        <form data-admin-action data-confirm="Reboot the device now?" action="{{ route('dashboard.admin.actions', ['action' => 'reboot']) }}" method="post">
                             @csrf
-                            <label class="toggle">
-                                <input type="checkbox" data-toggle-input data-toggle-target="server" @checked($serverRunning) @disabled($sudoBlocked)>
-                                <span class="toggle-track"></span>
-                            </label>
+                            <button class="btn primary" type="submit" @disabled($sudoBlocked)>Reboot</button>
+                        </form>
+                        <form data-admin-action data-confirm="Shutdown the device now?" action="{{ route('dashboard.admin.actions', ['action' => 'shutdown']) }}" method="post">
+                            @csrf
+                            <button class="btn ghost" type="submit" @disabled($sudoBlocked)>Shutdown</button>
                         </form>
                     </div>
-                    <div class="item">
-                        <div class="item-info">
-                            <p>Hotspot Control</p>
-                            <span>Turn hotspot on/off</span>
-                        </div>
-                        <form class="toggle-form" data-admin-toggle data-action-on="{{ route('dashboard.admin.actions', ['action' => 'hotspot_on']) }}" data-action-off="{{ route('dashboard.admin.actions', ['action' => 'hotspot_off']) }}" data-confirm-on="Turn hotspot on?" data-confirm-off="Turn hotspot off?" method="post">
-                            @csrf
-                            <label class="toggle">
-                                <input type="checkbox" data-toggle-input data-toggle-target="hotspot" @checked($hotspotOn) @disabled($sudoBlocked)>
-                                <span class="toggle-track"></span>
-                            </label>
-                        </form>
+                </div>
+                <div class="item">
+                    <div class="item-info">
+                        <p>Hotspot Settings</p>
+                        <span>Save SSID and password for hotspot use</span>
                     </div>
-                    <div class="item">
-                        <div class="item-info">
-                            <p>Power Actions</p>
-                            <span>Reboot or shutdown device</span>
-                        </div>
-                        <div class="inline-actions">
-                            <form data-admin-action data-confirm="Reboot the device now?" action="{{ route('dashboard.admin.actions', ['action' => 'reboot']) }}" method="post">
-                                @csrf
-                                <button class="btn primary" type="submit" @disabled($sudoBlocked)>Reboot</button>
-                            </form>
-                            <form data-admin-action data-confirm="Shutdown the device now?" action="{{ route('dashboard.admin.actions', ['action' => 'shutdown']) }}" method="post">
-                                @csrf
-                                <button class="btn ghost" type="submit" @disabled($sudoBlocked)>Shutdown</button>
-                            </form>
-                        </div>
-                    </div>
-                    <div class="item">
-                        <div class="item-info">
-                            <p>Hotspot Settings</p>
-                            <span>Save SSID and password for hotspot use</span>
-                        </div>
-                        @php
-                            $hotspot_ssid = '';
-                            $hotspot_password = '';
-                            $hotspot_path = storage_path('app/hotspot.json');
-                            if (file_exists($hotspot_path)) {
-                                try {
-                                    $raw = file_get_contents($hotspot_path);
-                                    $json = json_decode($raw, true);
-                                    if (is_array($json)) {
-                                        $hotspot_ssid = $json['ssid'] ?? '';
-                                        $hotspot_password = $json['password'] ?? '';
-                                    }
-                                } catch (\Throwable $e) {
-                                    // ignore read errors
+                    @php
+                        $hotspot_ssid = '';
+                        $hotspot_password = '';
+                        $hotspot_path = storage_path('app/hotspot.json');
+                        if (file_exists($hotspot_path)) {
+                            try {
+                                $raw = file_get_contents($hotspot_path);
+                                $json = json_decode($raw, true);
+                                if (is_array($json)) {
+                                    $hotspot_ssid = $json['ssid'] ?? '';
+                                    $hotspot_password = $json['password'] ?? '';
                                 }
+                            } catch (\Throwable $e) {
+                                // ignore read errors
                             }
-                        @endphp
-                        <form action="{{ route('dashboard.admin.settings') }}" method="post">
-                            @csrf
-                            <div style="display:flex;gap:8px;align-items:center;">
-                                <input name="hotspot_ssid" value="{{ old('hotspot_ssid', $hotspot_ssid) }}" placeholder="SSID" style="padding:8px;border-radius:8px;border:1px solid #ccc;">
-                                <input name="hotspot_password" value="{{ old('hotspot_password', $hotspot_password) }}" placeholder="Password" style="padding:8px;border-radius:8px;border:1px solid #ccc;">
-                                <button class="btn primary" type="submit">Save</button>
-                            </div>
-                        </form>
-                        <form data-admin-action data-confirm="Apply hotspot settings to this device? This requires sudo and will modify network settings." action="{{ route('dashboard.admin.actions', ['action' => 'apply_hotspot_settings']) }}" method="post" style="margin-top:8px;">
-                            @csrf
-                            <button class="btn ghost" type="submit" @disabled($sudoBlocked)>Apply to device</button>
-                        </form>
-                    </div>
+                        }
+                    @endphp
+                    <form action="{{ route('dashboard.admin.settings') }}" method="post">
+                        @csrf
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            <input name="hotspot_ssid" value="{{ old('hotspot_ssid', $hotspot_ssid) }}" placeholder="SSID" style="padding:8px;border-radius:8px;border:1px solid #ccc;">
+                            <input name="hotspot_password" value="{{ old('hotspot_password', $hotspot_password) }}" placeholder="Password" style="padding:8px;border-radius:8px;border:1px solid #ccc;">
+                            <button class="btn primary" type="submit">Save</button>
+                        </div>
+                    </form>
+                    <form data-admin-action data-confirm="Apply hotspot settings to this device? This requires sudo and will modify network settings." action="{{ route('dashboard.admin.actions', ['action' => 'apply_hotspot_settings']) }}" method="post" style="margin-top:8px;">
+                        @csrf
+                        <button class="btn ghost" type="submit" @disabled($sudoBlocked)>Apply to device</button>
+                    </form>
                 </div>
-            </section>
-
-            <section class="panel table-panel">
-                <div class="panel-header">
-                    <h4>Recent Admin Actions</h4>
-                    <div class="panel-actions">
-                        <span class="badge blue">Last 10</span>
-                        <form data-admin-action data-action-name="clear_logs" data-confirm="Clear all admin action logs?" action="{{ route('dashboard.admin.actions', ['action' => 'clear_logs']) }}" method="post">
-                            @csrf
-                            <button class="btn ghost btn-small" type="submit" @disabled($actionsDisabled)>Clear Logs</button>
-                        </form>
-                    </div>
-                </div>
-                <div class="panel-body table-scroll">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>Admin</th>
-                                <th>Action</th>
-                                <th>Result</th>
-                                <th>Message</th>
-                            </tr>
-                        </thead>
-                        <tbody data-action-log-body>
-                            @forelse ($logs as $log)
-                                <tr>
-                                    <td>{{ $log->created_at->format('Y-m-d H:i') }}</td>
-                                    <td>{{ $log->user->name ?? 'Unknown' }}</td>
-                                    <td>{{ $log->action }}</td>
-                                    <td>{{ ucfirst($log->result) }}</td>
-                                    <td>{{ $log->message }}</td>
-                                </tr>
-                            @empty
-                                <tr data-action-log-empty>
-                                    <td colspan="5">No actions logged yet.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <div class="modal" id="confirm-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h3 id="confirm-title">Confirm Action</h3>
-                <button class="icon-close" type="button" data-confirm-close aria-label="Close dialog">×</button>
             </div>
-            <p class="modal-message" data-confirm-message>Are you sure?</p>
-            <div class="modal-actions">
-                <button class="btn ghost" type="button" data-confirm-no>Cancel</button>
-                <button class="btn primary" type="button" data-confirm-yes>Confirm</button>
-            </div>
-        </div>
-    </div>
+        </section>
 
-    <script src="{{ asset('assets/js/admin-actions.js') }}"></script>
-    <script src="{{ asset('assets/js/admin-dashboard.js') }}"></script>
-    <script src="{{ asset('assets/js/dashboard.js') }}"></script>
-</body>
-</html>
+    </main>
+@endsection

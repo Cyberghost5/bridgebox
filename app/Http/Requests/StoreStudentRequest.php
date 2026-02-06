@@ -20,6 +20,7 @@ class StoreStudentRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
             'phone' => ['nullable', 'string', 'max:32'],
+            'school_class_id' => ['required', 'integer', Rule::exists('school_classes', 'id')],
             'class' => ['nullable', 'string', 'max:255'],
             'department' => ['nullable', 'string', 'max:255'],
             'admission_id' => ['nullable', 'string', 'max:255'],
@@ -31,7 +32,7 @@ class StoreStudentRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'auto_generate' => $this->boolean('auto_generate'),
+            'auto_generate' => $this->boolean('auto_generate') ? 1 : 0,
         ]);
     }
 }

@@ -17,8 +17,4 @@ class SchoolClass extends Model
         'description',
     ];
 
-    public function subjects()
-    {
-        return $this->hasMany(Subject::class, 'school_class_id');
-    }
 }

@@ -1,9 +1,26 @@
 <?php
 
-use App\Http\Controllers\AdminActionController;
-use App\Http\Controllers\AdminDashboardController;
-use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\Admin\AdminActionController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminLogController;
+use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\AdminSubjectController;
+use App\Http\Controllers\Admin\AdminTopicController;
+use App\Http\Controllers\Admin\AdminTopicLessonController;
+use App\Http\Controllers\Admin\AdminAssessmentController;
+use App\Http\Controllers\Admin\AdminAssessmentQuestionController;
+use App\Http\Controllers\Teacher\TeacherAssessmentController;
+use App\Http\Controllers\Teacher\TeacherAssessmentQuestionController;
+use App\Http\Controllers\Teacher\TeacherAssignmentController;
+use App\Http\Controllers\Teacher\TeacherClassController;
+use App\Http\Controllers\Teacher\TeacherDashboardController;
+use App\Http\Controllers\Teacher\TeacherStudentController;
+use App\Http\Controllers\Teacher\TeacherSubjectController;
+use App\Http\Controllers\Teacher\TeacherTopicController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Student\AssignmentController as StudentAssignmentController;
+use App\Http\Controllers\Admin\AdminAssignmentController;
+use App\Http\Controllers\Admin\AdminAssignmentSubmissionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +39,10 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/dashboard/admin', [AdminDashboardController::class, 'index'])
     ->middleware('role:admin')
     ->name('dashboard.admin');
+
+Route::get('/dashboard/admin/logs', [AdminLogController::class, 'index'])
+    ->middleware('role:admin')
+    ->name('admin.logs.index');
 
 Route::get('/dashboard/admin/status', [AdminDashboardController::class, 'status'])
     ->middleware('role:admin')
@@ -64,10 +85,14 @@ Route::prefix('dashboard/admin/users')
         Route::get('/teachers', [AdminUserController::class, 'teachers'])->name('teachers.index');
         Route::get('/teachers/create', [AdminUserController::class, 'createTeacher'])->name('teachers.create');
         Route::post('/teachers', [AdminUserController::class, 'storeTeacher'])->name('teachers.store');
+        Route::get('/teachers/{user}/edit', [AdminUserController::class, 'editTeacher'])->name('teachers.edit');
+        Route::put('/teachers/{user}', [AdminUserController::class, 'updateTeacher'])->name('teachers.update');
         Route::get('/teachers/{user}/created', [AdminUserController::class, 'createdTeacher'])->name('teachers.created');
         Route::get('/students', [AdminUserController::class, 'students'])->name('students.index');
         Route::get('/students/create', [AdminUserController::class, 'createStudent'])->name('students.create');
         Route::post('/students', [AdminUserController::class, 'storeStudent'])->name('students.store');
+        Route::get('/students/{user}/edit', [AdminUserController::class, 'editStudent'])->name('students.edit');
+        Route::put('/students/{user}', [AdminUserController::class, 'updateStudent'])->name('students.update');
         Route::get('/students/{user}/created', [AdminUserController::class, 'createdStudent'])->name('students.created');
         Route::post('/users/{user}/toggle', [AdminUserController::class, 'toggleStatus'])->name('toggle');
         Route::post('/users/{user}/reset-password', [AdminUserController::class, 'resetPassword'])->name('reset');
@@ -79,19 +104,195 @@ Route::prefix('dashboard/admin/classes')
     ->middleware('role:admin')
     ->name('admin.classes.')
     ->group(function () {
-        Route::get('/', [\App\Http\Controllers\AdminClassController::class, 'index'])->name('index');
-        Route::get('/create', [\App\Http\Controllers\AdminClassController::class, 'create'])->name('create');
-        Route::post('/', [\App\Http\Controllers\AdminClassController::class, 'store'])->name('store');
-        Route::get('/{class}/edit', [\App\Http\Controllers\AdminClassController::class, 'edit'])->name('edit');
-        Route::put('/{class}', [\App\Http\Controllers\AdminClassController::class, 'update'])->name('update');
-        Route::delete('/{class}', [\App\Http\Controllers\AdminClassController::class, 'destroy'])->name('delete');
+        Route::get('/', [\App\Http\Controllers\Admin\AdminClassController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Admin\AdminClassController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\AdminClassController::class, 'store'])->name('store');
+        Route::get('/{class}/edit', [\App\Http\Controllers\Admin\AdminClassController::class, 'edit'])->name('edit');
+        Route::put('/{class}', [\App\Http\Controllers\Admin\AdminClassController::class, 'update'])->name('update');
+        Route::delete('/{class}', [\App\Http\Controllers\Admin\AdminClassController::class, 'destroy'])->name('delete');
     });
 
-Route::view('/dashboard/teacher', 'dashboards.teacher')
+Route::prefix('dashboard/admin/subjects')
+    ->middleware('role:admin')
+    ->name('admin.subjects.')
+    ->group(function () {
+        Route::get('/', [AdminSubjectController::class, 'index'])->name('index');
+        Route::get('/create', [AdminSubjectController::class, 'create'])->name('create');
+        Route::post('/', [AdminSubjectController::class, 'store'])->name('store');
+        Route::get('/{subject}/edit', [AdminSubjectController::class, 'edit'])->name('edit');
+        Route::put('/{subject}', [AdminSubjectController::class, 'update'])->name('update');
+        Route::delete('/{subject}', [AdminSubjectController::class, 'destroy'])->name('delete');
+    });
+
+Route::prefix('dashboard/admin/topics')
+    ->middleware('role:admin')
+    ->name('admin.topics.')
+    ->group(function () {
+        Route::get('/', [AdminTopicController::class, 'index'])->name('index');
+        Route::get('/by-subject', [AdminTopicController::class, 'bySubject'])->name('by-subject');
+        Route::get('/create', [AdminTopicController::class, 'create'])->name('create');
+        Route::post('/', [AdminTopicController::class, 'store'])->name('store');
+        Route::get('/{topic}/edit', [AdminTopicController::class, 'edit'])->name('edit');
+        Route::put('/{topic}', [AdminTopicController::class, 'update'])->name('update');
+        Route::delete('/{topic}', [AdminTopicController::class, 'destroy'])->name('delete');
+
+        Route::get('/{topic}/lessons', [AdminTopicLessonController::class, 'index'])->name('lessons.index');
+        Route::get('/{topic}/lessons/create', [AdminTopicLessonController::class, 'create'])->name('lessons.create');
+        Route::post('/{topic}/lessons', [AdminTopicLessonController::class, 'store'])->name('lessons.store');
+        Route::get('/{topic}/lessons/{lesson}/download', [AdminTopicLessonController::class, 'download'])->name('lessons.download');
+        Route::delete('/{topic}/lessons/{lesson}', [AdminTopicLessonController::class, 'destroy'])->name('lessons.delete');
+    });
+
+Route::prefix('dashboard/admin/quizzes')
+    ->middleware('role:admin')
+    ->name('admin.quizzes.')
+    ->group(function () {
+        Route::get('/', [AdminAssessmentController::class, 'index'])->defaults('type', 'quiz')->name('index');
+        Route::get('/create', [AdminAssessmentController::class, 'create'])->defaults('type', 'quiz')->name('create');
+        Route::post('/', [AdminAssessmentController::class, 'store'])->defaults('type', 'quiz')->name('store');
+        Route::get('/{assessment}/edit', [AdminAssessmentController::class, 'edit'])->defaults('type', 'quiz')->name('edit');
+        Route::put('/{assessment}', [AdminAssessmentController::class, 'update'])->defaults('type', 'quiz')->name('update');
+        Route::delete('/{assessment}', [AdminAssessmentController::class, 'destroy'])->defaults('type', 'quiz')->name('delete');
+
+        Route::get('/{assessment}/questions', [AdminAssessmentQuestionController::class, 'index'])->defaults('type', 'quiz')->name('questions.index');
+        Route::get('/{assessment}/questions/create', [AdminAssessmentQuestionController::class, 'create'])->defaults('type', 'quiz')->name('questions.create');
+        Route::post('/{assessment}/questions', [AdminAssessmentQuestionController::class, 'store'])->defaults('type', 'quiz')->name('questions.store');
+        Route::get('/{assessment}/questions/{question}/edit', [AdminAssessmentQuestionController::class, 'edit'])->defaults('type', 'quiz')->name('questions.edit');
+        Route::put('/{assessment}/questions/{question}', [AdminAssessmentQuestionController::class, 'update'])->defaults('type', 'quiz')->name('questions.update');
+        Route::delete('/{assessment}/questions/{question}', [AdminAssessmentQuestionController::class, 'destroy'])->defaults('type', 'quiz')->name('questions.delete');
+    });
+
+Route::prefix('dashboard/admin/exams')
+    ->middleware('role:admin')
+    ->name('admin.exams.')
+    ->group(function () {
+        Route::get('/', [AdminAssessmentController::class, 'index'])->defaults('type', 'exam')->name('index');
+        Route::get('/create', [AdminAssessmentController::class, 'create'])->defaults('type', 'exam')->name('create');
+        Route::post('/', [AdminAssessmentController::class, 'store'])->defaults('type', 'exam')->name('store');
+        Route::get('/{assessment}/edit', [AdminAssessmentController::class, 'edit'])->defaults('type', 'exam')->name('edit');
+        Route::put('/{assessment}', [AdminAssessmentController::class, 'update'])->defaults('type', 'exam')->name('update');
+        Route::delete('/{assessment}', [AdminAssessmentController::class, 'destroy'])->defaults('type', 'exam')->name('delete');
+
+        Route::get('/{assessment}/questions', [AdminAssessmentQuestionController::class, 'index'])->defaults('type', 'exam')->name('questions.index');
+        Route::get('/{assessment}/questions/create', [AdminAssessmentQuestionController::class, 'create'])->defaults('type', 'exam')->name('questions.create');
+        Route::post('/{assessment}/questions', [AdminAssessmentQuestionController::class, 'store'])->defaults('type', 'exam')->name('questions.store');
+        Route::get('/{assessment}/questions/{question}/edit', [AdminAssessmentQuestionController::class, 'edit'])->defaults('type', 'exam')->name('questions.edit');
+        Route::put('/{assessment}/questions/{question}', [AdminAssessmentQuestionController::class, 'update'])->defaults('type', 'exam')->name('questions.update');
+        Route::delete('/{assessment}/questions/{question}', [AdminAssessmentQuestionController::class, 'destroy'])->defaults('type', 'exam')->name('questions.delete');
+    });
+
+Route::prefix('dashboard/admin/assignments')
+    ->middleware('role:admin')
+    ->name('admin.assignments.')
+    ->group(function () {
+        Route::get('/', [AdminAssignmentController::class, 'index'])->name('index');
+        Route::get('/create', [AdminAssignmentController::class, 'create'])->name('create');
+        Route::post('/', [AdminAssignmentController::class, 'store'])->name('store');
+        Route::get('/{assignment}/edit', [AdminAssignmentController::class, 'edit'])->name('edit');
+        Route::put('/{assignment}', [AdminAssignmentController::class, 'update'])->name('update');
+        Route::delete('/{assignment}', [AdminAssignmentController::class, 'destroy'])->name('delete');
+
+        Route::get('/{assignment}/submissions', [AdminAssignmentSubmissionController::class, 'index'])->name('submissions.index');
+        Route::get('/{assignment}/submissions/{submission}/download', [AdminAssignmentSubmissionController::class, 'download'])->name('submissions.download');
+        Route::delete('/{assignment}/submissions/{submission}', [AdminAssignmentSubmissionController::class, 'destroy'])->name('submissions.delete');
+    });
+
+Route::prefix('dashboard/student/assignments')
+    ->middleware('role:student')
+    ->name('student.assignments.')
+    ->group(function () {
+        Route::get('/{assignment}', [StudentAssignmentController::class, 'show'])->name('show');
+        Route::post('/{assignment}', [StudentAssignmentController::class, 'submit'])->name('submit');
+    });
+
+Route::get('/dashboard/teacher', [TeacherDashboardController::class, 'index'])
     ->middleware('role:teacher')
     ->name('dashboard.teacher');
+
+Route::prefix('dashboard/teacher')
+    ->middleware('role:teacher')
+    ->name('teacher.')
+    ->group(function () {
+        Route::prefix('students')->name('students.')->group(function () {
+            Route::get('/', [TeacherStudentController::class, 'index'])->name('index');
+            Route::get('/create', [TeacherStudentController::class, 'create'])->name('create');
+            Route::post('/', [TeacherStudentController::class, 'store'])->name('store');
+            Route::get('/{user}/created', [TeacherStudentController::class, 'created'])->name('created');
+            Route::get('/{user}/edit', [TeacherStudentController::class, 'edit'])->name('edit');
+            Route::put('/{user}', [TeacherStudentController::class, 'update'])->name('update');
+            Route::delete('/{user}', [TeacherStudentController::class, 'destroy'])->name('delete');
+        });
+
+        Route::prefix('classes')->name('classes.')->group(function () {
+            Route::get('/', [TeacherClassController::class, 'index'])->name('index');
+            Route::get('/create', [TeacherClassController::class, 'create'])->name('create');
+            Route::post('/', [TeacherClassController::class, 'store'])->name('store');
+            Route::get('/{class}/edit', [TeacherClassController::class, 'edit'])->name('edit');
+            Route::put('/{class}', [TeacherClassController::class, 'update'])->name('update');
+            Route::delete('/{class}', [TeacherClassController::class, 'destroy'])->name('delete');
+        });
+
+        Route::prefix('subjects')->name('subjects.')->group(function () {
+            Route::get('/', [TeacherSubjectController::class, 'index'])->name('index');
+            Route::get('/create', [TeacherSubjectController::class, 'create'])->name('create');
+            Route::post('/', [TeacherSubjectController::class, 'store'])->name('store');
+            Route::get('/{subject}/edit', [TeacherSubjectController::class, 'edit'])->name('edit');
+            Route::put('/{subject}', [TeacherSubjectController::class, 'update'])->name('update');
+            Route::delete('/{subject}', [TeacherSubjectController::class, 'destroy'])->name('delete');
+        });
+
+        Route::prefix('topics')->name('topics.')->group(function () {
+            Route::get('/', [TeacherTopicController::class, 'index'])->name('index');
+            Route::get('/by-subject', [TeacherTopicController::class, 'bySubject'])->name('by-subject');
+            Route::get('/create', [TeacherTopicController::class, 'create'])->name('create');
+            Route::post('/', [TeacherTopicController::class, 'store'])->name('store');
+            Route::get('/{topic}/edit', [TeacherTopicController::class, 'edit'])->name('edit');
+            Route::put('/{topic}', [TeacherTopicController::class, 'update'])->name('update');
+            Route::delete('/{topic}', [TeacherTopicController::class, 'destroy'])->name('delete');
+        });
+
+        Route::prefix('assignments')->name('assignments.')->group(function () {
+            Route::get('/', [TeacherAssignmentController::class, 'index'])->name('index');
+            Route::get('/create', [TeacherAssignmentController::class, 'create'])->name('create');
+            Route::post('/', [TeacherAssignmentController::class, 'store'])->name('store');
+            Route::get('/{assignment}/edit', [TeacherAssignmentController::class, 'edit'])->name('edit');
+            Route::put('/{assignment}', [TeacherAssignmentController::class, 'update'])->name('update');
+            Route::delete('/{assignment}', [TeacherAssignmentController::class, 'destroy'])->name('delete');
+        });
+
+        Route::prefix('quizzes')->name('quizzes.')->group(function () {
+            Route::get('/', [TeacherAssessmentController::class, 'index'])->defaults('type', 'quiz')->name('index');
+            Route::get('/create', [TeacherAssessmentController::class, 'create'])->defaults('type', 'quiz')->name('create');
+            Route::post('/', [TeacherAssessmentController::class, 'store'])->defaults('type', 'quiz')->name('store');
+            Route::get('/{assessment}/edit', [TeacherAssessmentController::class, 'edit'])->defaults('type', 'quiz')->name('edit');
+            Route::put('/{assessment}', [TeacherAssessmentController::class, 'update'])->defaults('type', 'quiz')->name('update');
+            Route::delete('/{assessment}', [TeacherAssessmentController::class, 'destroy'])->defaults('type', 'quiz')->name('delete');
+
+            Route::get('/{assessment}/questions', [TeacherAssessmentQuestionController::class, 'index'])->defaults('type', 'quiz')->name('questions.index');
+            Route::get('/{assessment}/questions/create', [TeacherAssessmentQuestionController::class, 'create'])->defaults('type', 'quiz')->name('questions.create');
+            Route::post('/{assessment}/questions', [TeacherAssessmentQuestionController::class, 'store'])->defaults('type', 'quiz')->name('questions.store');
+            Route::get('/{assessment}/questions/{question}/edit', [TeacherAssessmentQuestionController::class, 'edit'])->defaults('type', 'quiz')->name('questions.edit');
+            Route::put('/{assessment}/questions/{question}', [TeacherAssessmentQuestionController::class, 'update'])->defaults('type', 'quiz')->name('questions.update');
+            Route::delete('/{assessment}/questions/{question}', [TeacherAssessmentQuestionController::class, 'destroy'])->defaults('type', 'quiz')->name('questions.delete');
+        });
+
+        Route::prefix('exams')->name('exams.')->group(function () {
+            Route::get('/', [TeacherAssessmentController::class, 'index'])->defaults('type', 'exam')->name('index');
+            Route::get('/create', [TeacherAssessmentController::class, 'create'])->defaults('type', 'exam')->name('create');
+            Route::post('/', [TeacherAssessmentController::class, 'store'])->defaults('type', 'exam')->name('store');
+            Route::get('/{assessment}/edit', [TeacherAssessmentController::class, 'edit'])->defaults('type', 'exam')->name('edit');
+            Route::put('/{assessment}', [TeacherAssessmentController::class, 'update'])->defaults('type', 'exam')->name('update');
+            Route::delete('/{assessment}', [TeacherAssessmentController::class, 'destroy'])->defaults('type', 'exam')->name('delete');
+
+            Route::get('/{assessment}/questions', [TeacherAssessmentQuestionController::class, 'index'])->defaults('type', 'exam')->name('questions.index');
+            Route::get('/{assessment}/questions/create', [TeacherAssessmentQuestionController::class, 'create'])->defaults('type', 'exam')->name('questions.create');
+            Route::post('/{assessment}/questions', [TeacherAssessmentQuestionController::class, 'store'])->defaults('type', 'exam')->name('questions.store');
+            Route::get('/{assessment}/questions/{question}/edit', [TeacherAssessmentQuestionController::class, 'edit'])->defaults('type', 'exam')->name('questions.edit');
+            Route::put('/{assessment}/questions/{question}', [TeacherAssessmentQuestionController::class, 'update'])->defaults('type', 'exam')->name('questions.update');
+            Route::delete('/{assessment}/questions/{question}', [TeacherAssessmentQuestionController::class, 'destroy'])->defaults('type', 'exam')->name('questions.delete');
+        });
+    });
 
 Route::view('/dashboard/student', 'dashboards.student')
     ->middleware('role:student')
     ->name('dashboard.student');
-
