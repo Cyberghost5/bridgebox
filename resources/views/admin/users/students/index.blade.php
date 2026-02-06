@@ -38,6 +38,12 @@
                         <path d="M16 14a6 6 0 0 1 6 6"></path>
                     </svg>
                 </a>
+                <a class="nav-item" href="{{ route('admin.classes.index') }}" aria-label="Manage classes">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                        <path d="M4 6h16v12H4z"></path>
+                        <path d="M7 9h10"></path>
+                    </svg>
+                </a>
                 <button class="nav-item" aria-label="System status">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
                         <path d="M4 18l6-6 4 4 6-8"></path>
