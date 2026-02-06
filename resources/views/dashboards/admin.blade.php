@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BridgeBox Admin Dashboard</title>
     <link rel="stylesheet" href="{{ asset('assets/css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/bootstrap-alerts.css') }}">
 </head>
 <body>
     <div class="page">
@@ -81,9 +82,9 @@
                 $serverRunning = str_contains(strtolower($status['server'] ?? ''), 'running');
                 $hotspotOn = str_starts_with(strtolower($status['hotspot'] ?? ''), 'on');
             @endphp
-            <div id="action-alert" class="alert {{ $flashStatus === 'success' ? 'alert-success' : ($flashStatus === 'error' ? 'alert-error' : '') }}" role="status" aria-live="polite" data-auto-dismiss="4000" @if (!$flashMessage) hidden @endif>
+            <div id="action-alert" class="alert alert-dismissible {{ $flashStatus === 'success' ? 'alert-success' : ($flashStatus === 'error' ? 'alert-error' : '') }}" role="status" aria-live="polite" data-auto-dismiss="4000" @if (!$flashMessage) hidden @endif>
                 <span data-alert-message>{{ $flashMessage }}</span>
-                <button class="alert-close" type="button" data-alert-close aria-label="Dismiss alert">×</button>
+                <button class="alert-close" type="button" data-alert-close data-bs-dismiss="alert" aria-label="Dismiss alert">×</button>
             </div>
             @if (!$actionsEnabled)
                 <div class="alert alert-warning">
@@ -194,7 +195,7 @@
                     </div>
                     <div>
                         <p>Last Update</p>
-                        <span data-status="last_update">{{ $status['last_update'] ?? 'unknown' }}</span>
+                        <span data-status="last_update">{{ $status['last_update'] ?? 'Unknown' }}</span>
                     </div>
                 </div>
             </section>
@@ -246,6 +247,41 @@
                                 <button class="btn ghost" type="submit" @disabled($sudoBlocked)>Shutdown</button>
                             </form>
                         </div>
+                    </div>
+                    <div class="item">
+                        <div class="item-info">
+                            <p>Hotspot Settings</p>
+                            <span>Save SSID and password for hotspot use</span>
+                        </div>
+                        @php
+                            $hotspot_ssid = '';
+                            $hotspot_password = '';
+                            $hotspot_path = storage_path('app/hotspot.json');
+                            if (file_exists($hotspot_path)) {
+                                try {
+                                    $raw = file_get_contents($hotspot_path);
+                                    $json = json_decode($raw, true);
+                                    if (is_array($json)) {
+                                        $hotspot_ssid = $json['ssid'] ?? '';
+                                        $hotspot_password = $json['password'] ?? '';
+                                    }
+                                } catch (\Throwable $e) {
+                                    // ignore read errors
+                                }
+                            }
+                        @endphp
+                        <form action="{{ route('dashboard.admin.settings') }}" method="post">
+                            @csrf
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <input name="hotspot_ssid" value="{{ old('hotspot_ssid', $hotspot_ssid) }}" placeholder="SSID" style="padding:8px;border-radius:8px;border:1px solid #ccc;">
+                                <input name="hotspot_password" value="{{ old('hotspot_password', $hotspot_password) }}" placeholder="Password" style="padding:8px;border-radius:8px;border:1px solid #ccc;">
+                                <button class="btn primary" type="submit">Save</button>
+                            </div>
+                        </form>
+                        <form data-admin-action data-confirm="Apply hotspot settings to this device? This requires sudo and will modify network settings." action="{{ route('dashboard.admin.actions', ['action' => 'apply_hotspot_settings']) }}" method="post" style="margin-top:8px;">
+                            @csrf
+                            <button class="btn ghost" type="submit" @disabled($sudoBlocked)>Apply to device</button>
+                        </form>
                     </div>
                 </div>
             </section>

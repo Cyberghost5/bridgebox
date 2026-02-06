@@ -47,9 +47,10 @@ const enableAlerts = () => {
     alerts.forEach((alert) => {
         let timeoutId = null;
         const closeButton = alert.querySelector('[data-alert-close]');
+        const bsClose = alert.querySelector('[data-bs-dismiss="alert"]');
 
         const clearTimer = () => {
-            if (timeoutId) {
+            if (timeoutId !== null) {
                 window.clearTimeout(timeoutId);
                 timeoutId = null;
             }
@@ -60,17 +61,29 @@ const enableAlerts = () => {
             clearTimer();
             alert.classList.add('is-fading');
             window.setTimeout(() => {
-                alert.hidden = true;
+                try {
+                    alert.hidden = true;
+                } catch (e) {
+                    // ignore
+                }
                 alert.classList.remove('is-fading');
             }, 350);
         };
 
         const schedule = () => {
             clearTimer();
-            if (alert.hidden) {
+
+            // If element is not visible, don't schedule.
+            const isHiddenAttr = alert.hidden === true;
+            const computed = window.getComputedStyle ? window.getComputedStyle(alert) : null;
+            const isDisplayNone = computed ? computed.display === 'none' : false;
+            if (isHiddenAttr || isDisplayNone) {
                 return;
             }
-            const delay = Number.parseInt(alert.dataset.autoDismiss || '0', 10);
+
+            // Prefer explicit attribute read to avoid possible dataset camelCase issues.
+            const raw = alert.getAttribute('data-auto-dismiss');
+            const delay = Number.parseInt(String(raw || '0').trim(), 10);
             if (delay > 0) {
                 timeoutId = window.setTimeout(hideAlert, delay);
             }
@@ -79,12 +92,14 @@ const enableAlerts = () => {
         if (closeButton) {
             closeButton.addEventListener('click', hideAlert);
         }
+        if (bsClose) {
+            bsClose.addEventListener('click', hideAlert);
+        }
 
         alert.addEventListener('alert:show', schedule);
 
-        if (!alert.hidden) {
-            schedule();
-        }
+        // Try to schedule now if element is visible.
+        schedule();
     });
 };
 

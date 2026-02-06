@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Students | BridgeBox</title>
+    <title>Classes | BridgeBox</title>
     <link rel="stylesheet" href="{{ asset('assets/css/dashboard.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/bootstrap-alerts.css') }}">
 </head>
@@ -13,6 +13,8 @@
             <div class="brand">
                 <div class="brand-mark">
                     <img class="brand-logo" src="{{ asset('assets/images/favicon.png') }}" alt="BridgeBox logo">
+                    <!-- <span></span>
+                    <span></span> -->
                 </div>
                 <span class="brand-name">BridgeBox</span>
             </div>
@@ -30,12 +32,18 @@
                         <path d="M4 17h10"></path>
                     </svg>
                 </a>
-                <a class="nav-item active" href="{{ route('admin.users.students.index') }}" aria-label="Manage students">
+                <a class="nav-item" href="{{ route('admin.users.students.index') }}" aria-label="Manage students">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
                         <circle cx="9" cy="7" r="4"></circle>
                         <path d="M2 21a7 7 0 0 1 14 0"></path>
                         <circle cx="17" cy="7" r="3"></circle>
                         <path d="M16 14a6 6 0 0 1 6 6"></path>
+                    </svg>
+                </a>
+                <a class="nav-item active" href="{{ route('admin.classes.index') }}" aria-label="Manage classes">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                        <path d="M4 6h16v12H4z"></path>
+                        <path d="M7 9h10"></path>
                     </svg>
                 </a>
                 <button class="nav-item" aria-label="System status">
@@ -60,12 +68,12 @@
         <main class="main">
             <header class="topbar">
                 <div class="greeting">
-                    <p class="eyebrow">Admin User Management</p>
-                    <h1>Students</h1>
-                    <p class="subtext">Search and manage students in the BridgeBox system.</p>
+                    <p class="eyebrow">Admin</p>
+                    <h1>Classes</h1>
+                    <p class="subtext">Create and manage classes used in the system.</p>
                 </div>
                 <div class="actions">
-                    <a class="btn primary" href="{{ route('admin.users.students.create') }}">Add Student</a>
+                    <a class="btn primary" href="{{ route('admin.classes.create') }}">Add Class</a>
                     <a class="btn ghost" href="{{ route('dashboard.admin') }}">Back to Dashboard</a>
                     <form action="{{ route('logout') }}" method="post">
                         @csrf
@@ -83,19 +91,19 @@
 
             <section class="panel table-panel">
                 <div class="panel-header">
-                    <h4>Students List</h4>
-                    <span class="badge blue">{{ $students->total() }}</span>
+                    <h4>Classes List</h4>
+                    <span class="badge blue">{{ $classes->total() }}</span>
                 </div>
                 <div class="panel-body">
                     <div class="table-toolbar">
-                        <form class="search-form" method="get" action="{{ route('admin.users.students.index') }}">
-                            <input class="search-input" type="text" name="q" placeholder="Search by name or email" value="{{ $search }}">
+                        <form class="search-form" method="get" action="{{ route('admin.classes.index') }}">
+                            <input class="search-input" type="text" name="q" placeholder="Search by name or slug" value="{{ $search }}">
                             <button class="btn ghost btn-small" type="submit">Search</button>
                             @if ($search)
-                                <a class="btn ghost btn-small" href="{{ route('admin.users.students.index') }}">Clear</a>
+                                <a class="btn ghost btn-small" href="{{ route('admin.classes.index') }}">Clear</a>
                             @endif
                         </form>
-                        <span class="text-muted">Showing {{ $students->count() }} of {{ $students->total() }}</span>
+                        <span class="text-muted">Showing {{ $classes->count() }} of {{ $classes->total() }}</span>
                     </div>
 
                     <div class="table-scroll">
@@ -103,42 +111,23 @@
                             <thead>
                                 <tr>
                                     <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Class</th>
-                                    <th>Department</th>
-                                    <th>Admission ID</th>
-                                    <th>Status</th>
+                                    <th>Slug</th>
+                                    <th>Description</th>
                                     <th>Created</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($students as $student)
+                                @forelse ($classes as $class)
                                     <tr>
-                                        <td>{{ $student->name }}</td>
-                                        <td>{{ $student->email }}</td>
-                                        <td>{{ $student->studentProfile?->class ?? '-' }}</td>
-                                        <td>{{ $student->studentProfile?->department ?? '-' }}</td>
-                                        <td>{{ $student->studentProfile?->admission_id ?? '-' }}</td>
-                                        <td>
-                                            <span class="badge {{ $student->is_active ? 'green' : 'rose' }}">
-                                                {{ $student->is_active ? 'Active' : 'Disabled' }}
-                                            </span>
-                                        </td>
-                                        <td>{{ $student->created_at?->format('Y-m-d') ?? '-' }}</td>
+                                        <td>{{ $class->name }}</td>
+                                        <td>{{ $class->slug }}</td>
+                                        <td>{{ Str::limit($class->description, 60) }}</td>
+                                        <td>{{ $class->created_at?->format('Y-m-d') ?? '-' }}</td>
                                         <td>
                                             <div class="table-actions">
-                                                <form method="post" action="{{ route('admin.users.toggle', $student) }}" data-confirm="Are you sure?">
-                                                    @csrf
-                                                    <button class="btn ghost btn-small" type="submit">
-                                                        {{ $student->is_active ? 'Disable' : 'Enable' }}
-                                                    </button>
-                                                </form>
-                                                <form method="post" action="{{ route('admin.users.reset', $student) }}" data-confirm="Reset password for this student?">
-                                                    @csrf
-                                                    <button class="btn ghost btn-small" type="submit">Reset Password</button>
-                                                </form>
-                                                <form method="post" action="{{ route('admin.users.delete', $student) }}" data-confirm="Delete this student account?">
+                                                <a class="btn ghost btn-small" href="{{ route('admin.classes.edit', $class) }}">Edit</a>
+                                                <form method="post" action="{{ route('admin.classes.delete', $class) }}" data-confirm="Delete this class?" style="display:inline-block;">
                                                     @csrf
                                                     @method('delete')
                                                     <button class="btn ghost btn-small" type="submit">Delete</button>
@@ -148,14 +137,14 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td class="table-empty" colspan="8">No students found.</td>
+                                        <td class="table-empty" colspan="5">No classes found.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
 
-                    @include('admin.users.partials.pagination', ['paginator' => $students])
+                    @include('admin.users.partials.pagination', ['paginator' => $classes])
                 </div>
             </section>
         </main>

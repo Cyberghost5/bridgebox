@@ -47,3 +47,21 @@ Dummy login details (seeded):
 Admin: admin@bridgebox.local / BridgeBox@123
 Teacher: teacher@bridgebox.local / BridgeBox@123
 Student: student@bridgebox.local / BridgeBox@123
+
+## Developer Quick Start
+
+A few developer-focused notes to help iterate quickly:
+
+- Use the setup script dry-run for safe validation:
+
+```bash
+sudo bash setup/onetimesetup.sh --dry-run
+```
+
+- To save hotspot defaults from the admin UI (saved to server storage): Admin Dashboard -> Admin Controls -> Hotspot Settings. This stores `storage/app/hotspot.json` on the server.
+
+- Offline alert styles are provided locally at `public/assets/css/bootstrap-alerts.css` so the UI works without CDN access.
+
+- CI: A basic GitHub Actions workflow has been added at `.github/workflows/ci.yml` to run `composer install` and `phpunit` if tests exist.
+
+If you'd like I can add a backup artisan command, implement applying hotspot settings via the admin UI (requires careful sudo handling), or wire up frontend fetching of saved hotspot defaults.

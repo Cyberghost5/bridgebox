@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminActionController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AuthController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'landing')->name('landing');
@@ -26,9 +27,35 @@ Route::get('/dashboard/admin/status', [AdminDashboardController::class, 'status'
     ->middleware('role:admin')
     ->name('dashboard.admin.status');
 
+Route::get('/dashboard/admin/settings', function (Request $request) {
+    $path = storage_path('app/hotspot.json');
+    if (file_exists($path)) {
+        $data = json_decode(file_get_contents($path), true) ?: [];
+        return response()->json($data);
+    }
+    return response()->json(['ssid' => '', 'password' => '']);
+})->middleware('role:admin')->name('dashboard.admin.settings.get');
+
 Route::post('/dashboard/admin/actions/{action}', [AdminActionController::class, 'run'])
     ->middleware('role:admin')
     ->name('dashboard.admin.actions');
+
+Route::post('/dashboard/admin/settings', function (Request $request) {
+    $request->validate([
+        'hotspot_ssid' => 'required|string|max:64',
+        'hotspot_password' => 'nullable|string|max:128',
+    ]);
+    $path = storage_path('app');
+    if (!is_dir($path)) {
+        mkdir($path, 0755, true);
+    }
+    $data = [
+        'ssid' => $request->input('hotspot_ssid'),
+        'password' => $request->input('hotspot_password'),
+    ];
+    file_put_contents($path . '/hotspot.json', json_encode($data));
+    return redirect()->back()->with('action_status', 'success')->with('action_message', 'Hotspot settings saved.');
+})->middleware('role:admin')->name('dashboard.admin.settings');
 
 Route::prefix('dashboard/admin/users')
     ->middleware('role:admin')
@@ -46,6 +73,18 @@ Route::prefix('dashboard/admin/users')
         Route::post('/users/{user}/reset-password', [AdminUserController::class, 'resetPassword'])->name('reset');
         Route::get('/users/{user}/password-reset', [AdminUserController::class, 'showPasswordReset'])->name('password-reset');
         Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('delete');
+    });
+
+Route::prefix('dashboard/admin/classes')
+    ->middleware('role:admin')
+    ->name('admin.classes.')
+    ->group(function () {
+        Route::get('/', [\App\Http\Controllers\AdminClassController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\AdminClassController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\AdminClassController::class, 'store'])->name('store');
+        Route::get('/{class}/edit', [\App\Http\Controllers\AdminClassController::class, 'edit'])->name('edit');
+        Route::put('/{class}', [\App\Http\Controllers\AdminClassController::class, 'update'])->name('update');
+        Route::delete('/{class}', [\App\Http\Controllers\AdminClassController::class, 'destroy'])->name('delete');
     });
 
 Route::view('/dashboard/teacher', 'dashboards.teacher')

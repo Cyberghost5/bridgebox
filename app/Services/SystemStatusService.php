@@ -215,10 +215,10 @@ class SystemStatusService
         $versionPath = base_path('VERSION');
         if (is_file($versionPath)) {
             $version = trim((string) file_get_contents($versionPath));
-            return $version !== '' ? $version : 'unknown';
+            return $version !== '' ? $version : 'Unknown';
         }
 
-        return 'unknown';
+        return 'Unknown';
     }
 
     private function isServiceActive(array $serviceNames): ?bool

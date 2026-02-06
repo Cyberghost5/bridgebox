@@ -38,6 +38,11 @@ class AdminActionService
                 ['nmcli', 'con', 'down', 'Hotspot'],
             ],
         ],
+        'apply_hotspot_settings' => [
+            'label' => 'Apply Hotspot Settings',
+            'requires_sudo' => true,
+            'steps' => [],
+        ],
         'reboot' => [
             'label' => 'Reboot Device',
             'requires_sudo' => true,
@@ -80,6 +85,45 @@ class AdminActionService
             if ($permissionCheck !== null) {
                 return $this->fail($permissionCheck);
             }
+        }
+
+        // Special handling for applying hotspot settings from storage
+        if ($action === 'apply_hotspot_settings') {
+            $path = storage_path('app/hotspot.json');
+            if (!file_exists($path)) {
+                return $this->fail('Hotspot settings not found. Save them first.');
+            }
+            $raw = file_get_contents($path);
+            $data = json_decode($raw, true) ?: [];
+            $ssid = trim($data['ssid'] ?? '');
+            $password = $data['password'] ?? '';
+            if ($ssid === '') {
+                return $this->fail('SSID is empty in stored hotspot settings.');
+            }
+
+            $steps = [];
+            // Create or update Hotspot using nmcli. Use dev wifi hotspot to (re)create.
+            if ($password !== null && $password !== '') {
+                $steps[] = ['nmcli', 'dev', 'wifi', 'hotspot', 'ifname', 'wlan0', 'ssid', $ssid, 'password', $password];
+            } else {
+                $steps[] = ['nmcli', 'dev', 'wifi', 'hotspot', 'ifname', 'wlan0', 'ssid', $ssid];
+            }
+            $steps[] = ['nmcli', 'connection', 'modify', 'Hotspot', 'connection.autoconnect', 'yes'];
+            $steps[] = ['nmcli', 'connection', 'modify', 'Hotspot', 'connection.autoconnect-priority', '100'];
+            $steps[] = ['nmcli', 'connection', 'modify', 'Hotspot', 'ipv4.method', 'shared'];
+            $steps[] = ['nmcli', 'connection', 'modify', 'Hotspot', 'ipv4.addresses', '192.168.4.1/24'];
+
+            foreach ($steps as $step) {
+                $result = $this->runStep($step, true);
+                if (!$result['success']) {
+                    return $this->fail($result['message']);
+                }
+            }
+
+            return [
+                'success' => true,
+                'message' => 'Hotspot settings applied.',
+            ];
         }
 
         foreach ($definition['steps'] as $step) {

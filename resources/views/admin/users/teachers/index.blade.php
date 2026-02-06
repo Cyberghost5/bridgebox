@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teachers | BridgeBox</title>
     <link rel="stylesheet" href="{{ asset('assets/css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/bootstrap-alerts.css') }}">
 </head>
 <body>
     <div class="page">
@@ -74,9 +75,9 @@
             </header>
 
             @if (session('message'))
-                <div class="alert {{ session('status') === 'success' ? 'alert-success' : 'alert-error' }}" role="status" data-auto-dismiss="4000">
+                <div class="alert alert-dismissible {{ session('status') === 'success' ? 'alert-success' : 'alert-error' }}" role="status" data-auto-dismiss="4000">
                     <span data-alert-message>{{ session('message') }}</span>
-                    <button class="alert-close" type="button" data-alert-close aria-label="Dismiss alert">×</button>
+                    <button class="alert-close" type="button" data-alert-close data-bs-dismiss="alert" aria-label="Dismiss alert">×</button>
                 </div>
             @endif
 
