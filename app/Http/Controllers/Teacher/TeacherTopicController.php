@@ -163,17 +163,19 @@ class TeacherTopicController extends Controller
     {
         $subjectId = $request->integer('subject_id');
         $classId = $request->integer('class_id');
+        $teacherClassId = $request->user()?->school_class_id;
 
-        if (!$subjectId) {
+        if (!$subjectId || !$teacherClassId) {
+            return response()->json([]);
+        }
+
+        if ($classId && $classId !== $teacherClassId) {
             return response()->json([]);
         }
 
         $query = Topic::query()
-            ->where('subject_id', $subjectId);
-
-        if ($classId) {
-            $query->where('school_class_id', $classId);
-        }
+            ->where('subject_id', $subjectId)
+            ->where('school_class_id', $teacherClassId);
 
         $topics = $query->orderBy('title')->get(['id', 'title']);
 
@@ -183,8 +185,17 @@ class TeacherTopicController extends Controller
     public function lessonsByTopic(Request $request): JsonResponse
     {
         $topicId = $request->integer('topic_id');
+        $teacherClassId = $request->user()?->school_class_id;
 
-        if (!$topicId) {
+        if (!$topicId || !$teacherClassId) {
+            return response()->json([]);
+        }
+
+        $topicMatches = Topic::query()
+            ->whereKey($topicId)
+            ->where('school_class_id', $teacherClassId)
+            ->exists();
+        if (!$topicMatches) {
             return response()->json([]);
         }
 

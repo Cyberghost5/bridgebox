@@ -28,6 +28,8 @@ class DemoAcademicSeeder extends Seeder
         ];
 
         $sections = [
+            ['name' => 'Creche', 'slug' => 'creche', 'description' => 'Creche section'],
+            ['name' => 'Kindergarten', 'slug' => 'kindergarten', 'description' => 'Kindergarten section'],
             ['name' => 'Primary', 'slug' => 'primary', 'description' => 'Primary section'],
             ['name' => 'Junior Secondary', 'slug' => 'junior-secondary', 'description' => 'Junior secondary section'],
             ['name' => 'Senior Secondary', 'slug' => 'senior-secondary', 'description' => 'Senior secondary section'],
@@ -94,6 +96,12 @@ class DemoAcademicSeeder extends Seeder
 
         $resolveSectionId = function (string $className) use ($createdSections): ?int {
             $name = strtoupper($className);
+            if (str_contains($name, 'CRECHE')) {
+                return $createdSections->get('creche')?->id;
+            }
+            if (str_contains($name, 'KINDERGARTEN') || str_contains($name, 'KINDER') || str_contains($name, 'KG ')) {
+                return $createdSections->get('kindergarten')?->id;
+            }
             if (str_contains($name, 'SSS') || str_contains($name, 'SENIOR')) {
                 return $createdSections->get('senior-secondary')?->id;
             }

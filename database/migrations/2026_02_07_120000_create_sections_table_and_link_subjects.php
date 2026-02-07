@@ -27,6 +27,8 @@ return new class extends Migration
         });
 
         $defaults = [
+            ['name' => 'Creche', 'slug' => 'creche', 'description' => 'Creche section'],
+            ['name' => 'Kindergarten', 'slug' => 'kindergarten', 'description' => 'Kindergarten section'],
             ['name' => 'Primary', 'slug' => 'primary', 'description' => 'Primary section'],
             ['name' => 'Junior Secondary', 'slug' => 'junior-secondary', 'description' => 'Junior secondary section'],
             ['name' => 'Senior Secondary', 'slug' => 'senior-secondary', 'description' => 'Senior secondary section'],
@@ -46,6 +48,8 @@ return new class extends Migration
         }
 
         $sectionMap = DB::table('sections')->pluck('id', 'slug')->all();
+        $crecheId = $sectionMap['creche'] ?? null;
+        $kindergartenId = $sectionMap['kindergarten'] ?? null;
         $primaryId = $sectionMap['primary'] ?? null;
         $juniorId = $sectionMap['junior-secondary'] ?? $primaryId;
         $seniorId = $sectionMap['senior-secondary'] ?? $juniorId;
@@ -54,7 +58,11 @@ return new class extends Migration
         foreach ($classes as $class) {
             $name = strtoupper((string) $class->name);
             $sectionId = $primaryId;
-            if (Str::contains($name, ['SSS', 'SENIOR', 'SS '])) {
+            if ($crecheId && Str::contains($name, ['CRECHE'])) {
+                $sectionId = $crecheId;
+            } elseif ($kindergartenId && Str::contains($name, ['KINDERGARTEN', 'KINDER', 'KG '])) {
+                $sectionId = $kindergartenId;
+            } elseif (Str::contains($name, ['SSS', 'SENIOR', 'SS '])) {
                 $sectionId = $seniorId;
             } elseif (Str::contains($name, ['JSS', 'JUNIOR'])) {
                 $sectionId = $juniorId;
