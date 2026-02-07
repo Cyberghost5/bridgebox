@@ -44,6 +44,19 @@
                         @enderror
                     </div>
 
+                    <div class="form-field">
+                        <label for="section_id">Section</label>
+                        <select id="section_id" name="section_id" required>
+                            <option value="" disabled @selected(!old('section_id', $class->section_id))>Select a section</option>
+                            @foreach ($sections as $section)
+                                <option value="{{ $section->id }}" @selected(old('section_id', $class->section_id) == $section->id)>{{ $section->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('section_id')
+                            <span class="form-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+
                     <div class="form-field form-field-full">
                         <label for="description">Description (optional)</label>
                         <textarea id="description" name="description">{{ old('description', $class->description) }}</textarea>

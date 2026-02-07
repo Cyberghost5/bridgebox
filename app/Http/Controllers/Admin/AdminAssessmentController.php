@@ -17,6 +17,9 @@ class AdminAssessmentController extends Controller
     {
         $this->assertType($type);
         $search = $request->string('q')->trim()->toString();
+        $classId = $request->integer('class_id');
+        $subjectId = $request->integer('subject_id');
+        $topicId = $request->integer('topic_id');
 
         $assessments = Assessment::query()
             ->with(['schoolClass', 'subject', 'topic'])
@@ -24,14 +27,36 @@ class AdminAssessmentController extends Controller
             ->when($search !== '', function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%");
             })
+            ->when($classId, function ($q) use ($classId) {
+                $q->where('school_class_id', $classId);
+            })
+            ->when($subjectId, function ($q) use ($subjectId) {
+                $q->where('subject_id', $subjectId);
+            })
+            ->when($topicId, function ($q) use ($topicId) {
+                $q->where('topic_id', $topicId);
+            })
             ->orderBy('created_at')
             ->paginate(10)
             ->withQueryString();
+
+        $subjectsQuery = Subject::orderBy('name');
+        if ($classId) {
+            $sectionId = SchoolClass::whereKey($classId)->value('section_id');
+            if ($sectionId) {
+                $subjectsQuery->where('section_id', $sectionId);
+            }
+        }
 
         return view('admin.assessments.index', [
             'assessments' => $assessments,
             'search' => $search,
             'type' => $type,
+            'classes' => SchoolClass::orderBy('name')->get(),
+            'subjects' => $subjectsQuery->get(),
+            'selectedClassId' => $classId ?: null,
+            'selectedSubjectId' => $subjectId ?: null,
+            'selectedTopicId' => $topicId ?: null,
         ]);
     }
 
@@ -41,7 +66,6 @@ class AdminAssessmentController extends Controller
 
         return view('admin.assessments.create', [
             'classes' => SchoolClass::orderBy('name')->get(),
-            'subjects' => Subject::orderBy('name')->get(),
             'type' => $type,
         ]);
     }
@@ -62,6 +86,25 @@ class AdminAssessmentController extends Controller
             'retake_attempts' => 'required|integer|min:0|max:100',
         ]);
 
+        $classSectionId = SchoolClass::whereKey($data['school_class_id'])->value('section_id');
+        $subjectSectionId = Subject::whereKey($data['subject_id'])->value('section_id');
+        if ($classSectionId && $subjectSectionId && $classSectionId !== $subjectSectionId) {
+            return back()->withErrors([
+                'subject_id' => 'The selected subject does not belong to the class section.',
+            ])->withInput();
+        }
+
+        $topicMatches = Topic::query()
+            ->whereKey($data['topic_id'])
+            ->where('subject_id', $data['subject_id'])
+            ->where('school_class_id', $data['school_class_id'])
+            ->exists();
+        if (!$topicMatches) {
+            return back()->withErrors([
+                'topic_id' => 'The selected topic does not belong to the subject and class.',
+            ])->withInput();
+        }
+
         $data['type'] = $type;
 
         Assessment::create($data);
@@ -81,7 +124,6 @@ class AdminAssessmentController extends Controller
         return view('admin.assessments.edit', [
             'assessment' => $assessment->load(['schoolClass', 'subject', 'topic']),
             'classes' => SchoolClass::orderBy('name')->get(),
-            'subjects' => Subject::orderBy('name')->get(),
             'type' => $type,
         ]);
     }
@@ -101,6 +143,25 @@ class AdminAssessmentController extends Controller
             'pass_mark' => 'required|integer|min:0|lte:total_mark',
             'retake_attempts' => 'required|integer|min:0|max:100',
         ]);
+
+        $classSectionId = SchoolClass::whereKey($data['school_class_id'])->value('section_id');
+        $subjectSectionId = Subject::whereKey($data['subject_id'])->value('section_id');
+        if ($classSectionId && $subjectSectionId && $classSectionId !== $subjectSectionId) {
+            return back()->withErrors([
+                'subject_id' => 'The selected subject does not belong to the class section.',
+            ])->withInput();
+        }
+
+        $topicMatches = Topic::query()
+            ->whereKey($data['topic_id'])
+            ->where('subject_id', $data['subject_id'])
+            ->where('school_class_id', $data['school_class_id'])
+            ->exists();
+        if (!$topicMatches) {
+            return back()->withErrors([
+                'topic_id' => 'The selected topic does not belong to the subject and class.',
+            ])->withInput();
+        }
 
         $assessment->update($data);
 

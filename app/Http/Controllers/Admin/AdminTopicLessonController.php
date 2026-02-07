@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Lesson;
 use App\Models\Topic;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -110,6 +111,22 @@ class AdminTopicLessonController extends Controller
             'status' => 'success',
             'message' => 'Lesson deleted.',
         ]);
+    }
+
+    public function byTopic(Request $request): JsonResponse
+    {
+        $topicId = $request->integer('topic_id');
+
+        if (!$topicId) {
+            return response()->json([]);
+        }
+
+        $lessons = Lesson::query()
+            ->where('topic_id', $topicId)
+            ->orderBy('title')
+            ->get(['id', 'title']);
+
+        return response()->json($lessons);
     }
 
     private function assertLessonTopic(Topic $topic, Lesson $lesson): void

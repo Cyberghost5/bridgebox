@@ -2,6 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\Assessment;
+use App\Models\Assignment;
+use App\Models\Lesson;
+use App\Models\SchoolClass;
+use App\Models\Subject;
+use App\Models\Topic;
+use App\Models\User;
 use App\Services\AdminActionService;
 use App\Services\SystemStatusService;
 use Illuminate\Http\JsonResponse;
@@ -15,10 +22,23 @@ class AdminDashboardController extends Controller
         $actionsEnabled = $actionService->isEnabled();
         $sudoAllowed = $actionService->isSudoAllowed();
 
+        $stats = [
+            'classes' => SchoolClass::count(),
+            'teachers' => User::where('role', User::ROLE_TEACHER)->count(),
+            'students' => User::where('role', User::ROLE_STUDENT)->count(),
+            'subjects' => Subject::count(),
+            'topics' => Topic::count(),
+            'lessons' => Lesson::count(),
+            'assignments' => Assignment::count(),
+            'quizzes' => Assessment::where('type', Assessment::TYPE_QUIZ)->count(),
+            'exams' => Assessment::where('type', Assessment::TYPE_EXAM)->count(),
+        ];
+
         return view('dashboards.admin', [
             'status' => $status,
             'actionsEnabled' => $actionsEnabled,
             'sudoAllowed' => $sudoAllowed,
+            'stats' => $stats,
         ]);
     }
 

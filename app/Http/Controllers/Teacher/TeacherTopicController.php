@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
+use App\Models\Lesson;
 use App\Models\SchoolClass;
 use App\Models\Subject;
 use App\Models\Topic;
@@ -16,27 +17,57 @@ class TeacherTopicController extends Controller
     public function index(Request $request): View
     {
         $search = $request->string('q')->trim()->toString();
+        $classId = $request->integer('class_id');
+        $subjectId = $request->integer('subject_id');
+        $teacherClassId = $request->user()?->school_class_id;
 
         $topics = Topic::query()
             ->with(['schoolClass', 'subject'])
             ->when($search !== '', function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%");
             })
+            ->when($teacherClassId, fn ($q) => $q->where('school_class_id', $teacherClassId), fn ($q) => $q->whereRaw('1 = 0'))
+            ->when($classId, function ($q) use ($classId, $teacherClassId) {
+                if (!$teacherClassId || $classId !== $teacherClassId) {
+                    $q->whereRaw('1 = 0');
+                }
+            })
+            ->when($subjectId, function ($q) use ($subjectId) {
+                $q->where('subject_id', $subjectId);
+            })
             ->orderBy('title')
             ->paginate(10)
             ->withQueryString();
 
+        $subjectsQuery = Subject::orderBy('name');
+        if ($teacherClassId) {
+            $sectionId = SchoolClass::whereKey($teacherClassId)->value('section_id');
+            if ($sectionId) {
+                $subjectsQuery->where('section_id', $sectionId);
+            }
+        } else {
+            $subjectsQuery->whereRaw('1 = 0');
+        }
+
         return view('teacher.topics.index', [
             'topics' => $topics,
             'search' => $search,
+            'classes' => $teacherClassId ? SchoolClass::whereKey($teacherClassId)->orderBy('name')->get() : collect(),
+            'subjects' => $subjectsQuery->get(),
+            'selectedClassId' => $classId ?: null,
+            'selectedSubjectId' => $subjectId ?: null,
         ]);
     }
 
     public function create(): View
     {
+        $teacherClassId = request()->user()?->school_class_id;
+        $classes = $teacherClassId
+            ? SchoolClass::whereKey($teacherClassId)->orderBy('name')->get()
+            : collect();
+
         return view('teacher.topics.create', [
-            'classes' => SchoolClass::orderBy('name')->get(),
-            'subjects' => Subject::orderBy('name')->get(),
+            'classes' => $classes,
         ]);
     }
 
@@ -49,6 +80,19 @@ class TeacherTopicController extends Controller
             'description' => 'nullable|string',
         ]);
 
+        $teacherClassId = $request->user()?->school_class_id;
+        if (!$teacherClassId || $teacherClassId !== (int) $data['school_class_id']) {
+            abort(404);
+        }
+
+        $classSectionId = SchoolClass::whereKey($data['school_class_id'])->value('section_id');
+        $subjectSectionId = Subject::whereKey($data['subject_id'])->value('section_id');
+        if ($classSectionId && $subjectSectionId && $classSectionId !== $subjectSectionId) {
+            return back()->withErrors([
+                'subject_id' => 'The selected subject does not belong to the class section.',
+            ])->withInput();
+        }
+
         Topic::create($data);
 
         return redirect()->route('teacher.topics.index')->with([
@@ -59,10 +103,14 @@ class TeacherTopicController extends Controller
 
     public function edit(Topic $topic): View
     {
+        $teacherClassId = request()->user()?->school_class_id;
+        if (!$teacherClassId || $topic->school_class_id !== $teacherClassId) {
+            abort(404);
+        }
+
         return view('teacher.topics.edit', [
             'topic' => $topic->load(['schoolClass', 'subject']),
-            'classes' => SchoolClass::orderBy('name')->get(),
-            'subjects' => Subject::orderBy('name')->get(),
+            'classes' => SchoolClass::whereKey($teacherClassId)->orderBy('name')->get(),
         ]);
     }
 
@@ -75,6 +123,19 @@ class TeacherTopicController extends Controller
             'description' => 'nullable|string',
         ]);
 
+        $teacherClassId = $request->user()?->school_class_id;
+        if (!$teacherClassId || $teacherClassId !== (int) $data['school_class_id']) {
+            abort(404);
+        }
+
+        $classSectionId = SchoolClass::whereKey($data['school_class_id'])->value('section_id');
+        $subjectSectionId = Subject::whereKey($data['subject_id'])->value('section_id');
+        if ($classSectionId && $subjectSectionId && $classSectionId !== $subjectSectionId) {
+            return back()->withErrors([
+                'subject_id' => 'The selected subject does not belong to the class section.',
+            ])->withInput();
+        }
+
         $topic->update($data);
 
         return redirect()->route('teacher.topics.index')->with([
@@ -85,6 +146,11 @@ class TeacherTopicController extends Controller
 
     public function destroy(Topic $topic): RedirectResponse
     {
+        $teacherClassId = auth()->user()?->school_class_id;
+        if (!$teacherClassId || $topic->school_class_id !== $teacherClassId) {
+            abort(404);
+        }
+
         $topic->delete();
 
         return back()->with([
@@ -112,5 +178,21 @@ class TeacherTopicController extends Controller
         $topics = $query->orderBy('title')->get(['id', 'title']);
 
         return response()->json($topics);
+    }
+
+    public function lessonsByTopic(Request $request): JsonResponse
+    {
+        $topicId = $request->integer('topic_id');
+
+        if (!$topicId) {
+            return response()->json([]);
+        }
+
+        $lessons = Lesson::query()
+            ->where('topic_id', $topicId)
+            ->orderBy('title')
+            ->get(['id', 'title']);
+
+        return response()->json($lessons);
     }
 }

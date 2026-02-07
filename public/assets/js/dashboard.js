@@ -103,11 +103,81 @@ const enableAlerts = () => {
     });
 };
 
+const enableRealtimeFilters = () => {
+    const forms = document.querySelectorAll('form.search-form');
+    forms.forEach((form) => {
+        const textInputs = form.querySelectorAll('input[type="text"], input[type="search"]');
+        const selects = form.querySelectorAll('select');
+
+        const submitForm = () => {
+            if (typeof form.requestSubmit === 'function') {
+                form.requestSubmit();
+            } else {
+                form.submit();
+            }
+        };
+
+        textInputs.forEach((input) => {
+            let timeoutId = null;
+            let lastValue = input.value;
+            const handler = () => {
+                if (timeoutId !== null) {
+                    window.clearTimeout(timeoutId);
+                }
+                timeoutId = window.setTimeout(() => {
+                    if (input.value === lastValue) {
+                        return;
+                    }
+                    lastValue = input.value;
+                    submitForm();
+                }, 350);
+            };
+
+            input.addEventListener('input', handler);
+            input.addEventListener('search', handler);
+        });
+
+        selects.forEach((select) => {
+            select.addEventListener('change', submitForm);
+        });
+    });
+};
+
+const enableRowLinks = () => {
+    const rows = document.querySelectorAll('tr[data-row-href]');
+    rows.forEach((row) => {
+        const href = row.getAttribute('data-row-href');
+        if (!href) {
+            return;
+        }
+
+        const navigate = () => {
+            window.location.href = href;
+        };
+
+        row.addEventListener('click', (event) => {
+            const interactive = event.target.closest('a,button,form,input,select,textarea,label');
+            if (interactive) {
+                return;
+            }
+            navigate();
+        });
+
+        row.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                navigate();
+            }
+        });
+    });
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     setBarAnimations();
     setMeterAnimations();
     enableNavHover();
     enableConfirmations();
     enableAlerts();
+    enableRealtimeFilters();
+    enableRowLinks();
 });
-

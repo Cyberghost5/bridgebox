@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
+use App\Models\Department;
 use App\Models\SchoolClass;
 use App\Models\User;
+use App\Services\StudentProgressService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,16 +20,24 @@ class TeacherStudentController extends Controller
     public function index(Request $request): View
     {
         $search = $request->string('q')->trim()->toString();
+        $classId = $request->integer('class_id');
+        $department = $request->string('department')->trim()->toString();
         $teacher = $request->user();
         $teacherClass = $teacher?->schoolClass;
+        $teacherClassId = $teacher?->school_class_id;
 
         $students = User::query()
             ->where('role', User::ROLE_STUDENT)
             ->with(['studentProfile', 'schoolClass'])
-            ->when($teacher?->school_class_id, function ($query) use ($teacher) {
-                $query->where('school_class_id', $teacher->school_class_id);
+            ->when($teacherClassId, function ($query) use ($teacherClassId) {
+                $query->where('school_class_id', $teacherClassId);
             }, function ($query) {
                 $query->whereRaw('1 = 0');
+            })
+            ->when($classId, function ($query) use ($classId, $teacherClassId) {
+                if (!$teacherClassId || $classId !== $teacherClassId) {
+                    $query->whereRaw('1 = 0');
+                }
             })
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
@@ -35,14 +45,29 @@ class TeacherStudentController extends Controller
                         ->orWhere('email', 'like', '%' . $search . '%');
                 });
             })
+            ->when($department !== '', function ($query) use ($department) {
+                $query->whereHas('studentProfile', function ($profileQuery) use ($department) {
+                    $profileQuery->where('department', $department);
+                });
+            })
             ->orderBy('name')
             ->paginate(10)
             ->withQueryString();
+
+        $classes = $teacherClassId
+            ? SchoolClass::whereKey($teacherClassId)->orderBy('name')->get()
+            : collect();
+
+        $departments = Department::orderBy('name')->pluck('name');
 
         return view('teacher.students.index', [
             'students' => $students,
             'search' => $search,
             'teacherClass' => $teacherClass,
+            'classes' => $classes,
+            'departments' => $departments,
+            'selectedClassId' => $classId ?: null,
+            'selectedDepartment' => $department !== '' ? $department : null,
         ]);
     }
 
@@ -62,6 +87,23 @@ class TeacherStudentController extends Controller
         return view('teacher.users.students.create', [
             'classes' => SchoolClass::whereKey($teacherClassId)->orderBy('name')->get(),
             'teacherClassId' => $teacherClassId,
+            'departments' => Department::orderBy('name')->get(),
+        ]);
+    }
+
+    public function show(User $user, StudentProgressService $progressService): View
+    {
+        abort_unless($user->role === User::ROLE_STUDENT, 404);
+        $teacherClassId = request()->user()?->school_class_id;
+        if (!$teacherClassId || $user->school_class_id !== $teacherClassId) {
+            abort(404);
+        }
+
+        $progress = $progressService->build($user);
+
+        return view('teacher.students.show', [
+            'student' => $user->load(['studentProfile', 'schoolClass']),
+            ...$progress,
         ]);
     }
 
@@ -157,6 +199,23 @@ class TeacherStudentController extends Controller
             'student' => $user->load(['studentProfile', 'schoolClass']),
             'classes' => SchoolClass::whereKey($teacherClassId)->orderBy('name')->get(),
             'teacherClassId' => $teacherClassId,
+            'departments' => Department::orderBy('name')->get(),
+        ]);
+    }
+
+    public function progress(User $user, StudentProgressService $progressService): View
+    {
+        abort_unless($user->role === User::ROLE_STUDENT, 404);
+        $teacherClassId = request()->user()?->school_class_id;
+        if (!$teacherClassId || $user->school_class_id !== $teacherClassId) {
+            abort(404);
+        }
+
+        $progress = $progressService->build($user);
+
+        return view('teacher.students.progress', [
+            'student' => $user->load(['studentProfile', 'schoolClass']),
+            ...$progress,
         ]);
     }
 

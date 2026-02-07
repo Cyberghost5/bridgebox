@@ -36,14 +36,42 @@
                     </div>
 
                     <div class="form-field">
-                        <label for="lesson_id">Lesson</label>
-                        <select id="lesson_id" name="lesson_id" required>
-                            <option value="" disabled @selected(!old('lesson_id', request('lesson_id')))>Select a lesson</option>
-                            @foreach ($lessons as $lesson)
-                                <option value="{{ $lesson->id }}" @selected(old('lesson_id', request('lesson_id')) == $lesson->id)>
-                                    {{ $lesson->title }}{{ $lesson->topic ? ' � ' . $lesson->topic->title : '' }}
-                                </option>
+                        <label for="school_class_id">Class</label>
+                        <select id="school_class_id" name="school_class_id" required>
+                            <option value="" disabled @selected(!old('school_class_id', $classes->first()?->id))>Select a class</option>
+                            @foreach ($classes as $class)
+                                <option value="{{ $class->id }}" @selected(old('school_class_id', $classes->first()?->id) == $class->id)>{{ $class->name }}</option>
                             @endforeach
+                        </select>
+                        @error('school_class_id')
+                            <span class="form-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="form-field">
+                        <label for="subject_id">Subject</label>
+                        <select id="subject_id" name="subject_id" required data-subjects-url="{{ route('teacher.subjects.by-class') }}" data-selected-subject="{{ old('subject_id') }}">
+                            <option value="" disabled @selected(!old('subject_id'))>Select a class first</option>
+                        </select>
+                        @error('subject_id')
+                            <span class="form-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="form-field">
+                        <label for="topic_id">Topic</label>
+                        <select id="topic_id" name="topic_id" required data-topics-url="{{ route('teacher.topics.by-subject') }}" data-selected-topic="{{ old('topic_id') }}">
+                            <option value="" disabled @selected(!old('topic_id'))>Select a subject first</option>
+                        </select>
+                        @error('topic_id')
+                            <span class="form-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="form-field">
+                        <label for="lesson_id">Lesson</label>
+                        <select id="lesson_id" name="lesson_id" required data-lessons-url="{{ route('teacher.topics.lessons.by-topic') }}" data-selected-lesson="{{ old('lesson_id') }}">
+                            <option value="" disabled @selected(!old('lesson_id'))>Select a topic first</option>
                         </select>
                         @error('lesson_id')
                             <span class="form-error">{{ $message }}</span>
@@ -124,6 +152,124 @@
 
 @push('scripts')
     <script>
+        const classSelect = document.getElementById('school_class_id');
+        const subjectSelect = document.getElementById('subject_id');
+        const topicSelect = document.getElementById('topic_id');
+        const lessonSelect = document.getElementById('lesson_id');
+
+        const loadSubjects = async (selectedSubjectId) => {
+            if (!classSelect || !subjectSelect) {
+                return null;
+            }
+
+            const classId = classSelect.value;
+            if (!classId) {
+                subjectSelect.innerHTML = '<option value="" disabled selected>Select a class first</option>';
+                topicSelect.innerHTML = '<option value="" disabled selected>Select a subject first</option>';
+                lessonSelect.innerHTML = '<option value="" disabled selected>Select a topic first</option>';
+                return null;
+            }
+
+            subjectSelect.innerHTML = '<option value="" disabled selected>Loading subjects...</option>';
+            try {
+                const url = new URL(subjectSelect.dataset.subjectsUrl, window.location.origin);
+                url.searchParams.set('class_id', classId);
+                const response = await fetch(url.toString(), {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                    credentials: 'same-origin',
+                });
+                const data = response.ok ? await response.json() : [];
+                let options = '<option value="" disabled>Select a subject</option>';
+                data.forEach((subject) => {
+                    const selected = selectedSubjectId && String(subject.id) === String(selectedSubjectId) ? 'selected' : '';
+                    options += `<option value="${subject.id}" ${selected}>${subject.name}</option>`;
+                });
+                subjectSelect.innerHTML = options;
+                return selectedSubjectId || subjectSelect.value || null;
+            } catch (error) {
+                subjectSelect.innerHTML = '<option value="" disabled selected>Unable to load subjects</option>';
+                topicSelect.innerHTML = '<option value="" disabled selected>Select a subject first</option>';
+                lessonSelect.innerHTML = '<option value="" disabled selected>Select a topic first</option>';
+                return null;
+            }
+        };
+
+        const loadTopics = async (selectedTopicId) => {
+            if (!subjectSelect || !topicSelect) {
+                return null;
+            }
+
+            const subjectId = subjectSelect.value;
+            const classId = classSelect ? classSelect.value : '';
+            if (!subjectId) {
+                topicSelect.innerHTML = '<option value="" disabled selected>Select a subject first</option>';
+                return null;
+            }
+
+            topicSelect.innerHTML = '<option value="" disabled selected>Loading topics...</option>';
+            try {
+                const url = new URL(topicSelect.dataset.topicsUrl, window.location.origin);
+                url.searchParams.set('subject_id', subjectId);
+                if (classId) {
+                    url.searchParams.set('class_id', classId);
+                }
+                const response = await fetch(url.toString(), {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                    credentials: 'same-origin',
+                });
+                const data = response.ok ? await response.json() : [];
+                let options = '<option value="" disabled>Select a topic</option>';
+                data.forEach((topic) => {
+                    const selected = selectedTopicId && String(topic.id) === String(selectedTopicId) ? 'selected' : '';
+                    options += `<option value="${topic.id}" ${selected}>${topic.title}</option>`;
+                });
+                topicSelect.innerHTML = options;
+                return selectedTopicId || topicSelect.value || null;
+            } catch (error) {
+                topicSelect.innerHTML = '<option value="" disabled selected>Unable to load topics</option>';
+                return null;
+            }
+        };
+
+        const loadLessons = async (topicId, selectedLessonId) => {
+            if (!lessonSelect) {
+                return;
+            }
+
+            if (!topicId) {
+                lessonSelect.innerHTML = '<option value="" disabled selected>Select a topic first</option>';
+                return;
+            }
+
+            lessonSelect.innerHTML = '<option value="" disabled selected>Loading lessons...</option>';
+            try {
+                const url = new URL(lessonSelect.dataset.lessonsUrl, window.location.origin);
+                url.searchParams.set('topic_id', topicId);
+                const response = await fetch(url.toString(), {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                    credentials: 'same-origin',
+                });
+                const data = response.ok ? await response.json() : [];
+                let options = '<option value="" disabled>Select a lesson</option>';
+                data.forEach((lesson) => {
+                    const selected = selectedLessonId && String(lesson.id) === String(selectedLessonId) ? 'selected' : '';
+                    options += `<option value="${lesson.id}" ${selected}>${lesson.title}</option>`;
+                });
+                lessonSelect.innerHTML = options;
+            } catch (error) {
+                lessonSelect.innerHTML = '<option value="" disabled selected>Unable to load lessons</option>';
+            }
+        };
+
         const allowLate = document.querySelector('input[name="allow_late"]');
         const lateFields = document.querySelectorAll('[data-late-fields]');
         const lateMark = document.getElementById('late_mark');
@@ -143,6 +289,34 @@
         if (allowLate) {
             allowLate.addEventListener('change', toggleLateFields);
             toggleLateFields();
+        }
+
+        if (subjectSelect && topicSelect && lessonSelect) {
+            if (classSelect) {
+                classSelect.addEventListener('change', async () => {
+                    const selectedSubjectId = await loadSubjects(null);
+                    const selectedTopicId = await loadTopics(null);
+                    await loadLessons(selectedTopicId, null);
+                });
+            }
+
+            subjectSelect.addEventListener('change', async () => {
+                const selectedTopicId = await loadTopics(null);
+                await loadLessons(selectedTopicId, null);
+            });
+
+            topicSelect.addEventListener('change', () => {
+                loadLessons(topicSelect.value, null);
+            });
+
+            const initialSubjectId = subjectSelect.dataset.selectedSubject || null;
+            const initialTopicId = topicSelect.dataset.selectedTopic || null;
+            const initialLessonId = lessonSelect.dataset.selectedLesson || null;
+            loadSubjects(initialSubjectId).then((resolvedSubjectId) => {
+                loadTopics(initialTopicId).then((resolvedTopicId) => {
+                    loadLessons(resolvedTopicId, initialLessonId);
+                });
+            });
         }
     </script>
 @endpush

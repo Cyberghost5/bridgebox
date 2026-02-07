@@ -1,13 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Submit Assignment | BridgeBox</title>
-    <link rel="stylesheet" href="{{ asset('assets/css/dashboard.css') }}">
-</head>
-<body>
-    <div class="page">
+@extends('student.layout')
+
+@section('title', 'Assignment')
+
+@section('main')
         <main class="main">
             <header class="topbar">
                 <div class="greeting">
@@ -16,6 +11,7 @@
                     <p class="subtext">Lesson: {{ $assignment->lesson?->title ?? '-' }}</p>
                 </div>
                 <div class="actions">
+                    <a class="btn ghost" href="{{ route('student.assignments.index') }}">Back to Assignments</a>
                     <form action="{{ route('logout') }}" method="post">
                         @csrf
                         <button class="btn primary" type="submit">Logout</button>
@@ -36,6 +32,33 @@
                     <span class="badge gold">Required</span>
                 </div>
                 <div class="panel-body">
+                    <div class="item-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">
+                        <div class="item">
+                            <div class="item-info">
+                                <p>Subject</p>
+                                <span>{{ $assignment->lesson?->topic?->subject?->name ?? '-' }}</span>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="item-info">
+                                <p>Topic</p>
+                                <span>{{ $assignment->lesson?->topic?->title ?? '-' }}</span>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="item-info">
+                                <p>Deadline</p>
+                                <span>{{ $assignment->due_at?->format('Y-m-d H:i') ?? '-' }}</span>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="item-info">
+                                <p>Pass Mark</p>
+                                <span>{{ $assignment->pass_mark ?? '-' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <form class="form-grid" action="{{ route('student.assignments.submit', $assignment) }}" method="post" enctype="multipart/form-data">
                         @csrf
                         <div class="form-field form-field-full">
@@ -61,11 +84,32 @@
                             <button class="btn primary" type="submit">Submit Assignment</button>
                         </div>
                     </form>
+
+                    @if ($submission)
+                        <div class="panel" style="margin-top: 16px;">
+                            <div class="panel-header">
+                                <h4>Last Submission</h4>
+                                <span class="badge blue">{{ $submission->submitted_at?->format('Y-m-d H:i') ?? '-' }}</span>
+                            </div>
+                            <div class="panel-body">
+                                <div class="item">
+                                    <div class="item-info">
+                                        <p>Status</p>
+                                        <span>{{ $submission->status ?? 'submitted' }}</span>
+                                    </div>
+                                </div>
+                                @if ($submission->file_name)
+                                    <div class="item">
+                                        <div class="item-info">
+                                            <p>File</p>
+                                            <span>{{ $submission->file_name }}</span>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </section>
         </main>
-    </div>
-
-    <script src="{{ asset('assets/js/dashboard.js') }}"></script>
-</body>
-</html>
+@endsection

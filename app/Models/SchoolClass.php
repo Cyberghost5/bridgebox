@@ -15,6 +15,11 @@ class SchoolClass extends Model
         'name',
         'slug',
         'description',
+        'section_id',
     ];
 
+    public function section()
+    {
+        return $this->belongsTo(Section::class, 'section_id');
+    }
 }

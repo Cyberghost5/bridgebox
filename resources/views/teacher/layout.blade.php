@@ -31,6 +31,9 @@
                 <a class="nav-item {{ (request()->routeIs('teacher.subjects.*') || $navSection === 'subjects') ? 'active' : '' }}" href="{{ route('teacher.subjects.index') }}" aria-label="Subjects">
                     <i class="fa-solid fa-book" aria-hidden="true"></i>
                 </a>
+                <a class="nav-item {{ (request()->routeIs('teacher.departments.*') || $navSection === 'departments') ? 'active' : '' }}" href="{{ route('teacher.departments.index') }}" aria-label="Departments">
+                    <i class="fa-solid fa-building-columns" aria-hidden="true"></i>
+                </a>
                 <a class="nav-item {{ (request()->routeIs('teacher.topics.*') || $navSection === 'topics') ? 'active' : '' }}" href="{{ route('teacher.topics.index') }}" aria-label="Topics">
                     <i class="fa-solid fa-list-check" aria-hidden="true"></i>
                 </a>
@@ -48,6 +51,16 @@
                 <div class="status-dot"></div>
                 <span>Teacher</span>
             </div>
+            @if (session('impersonator_id'))
+                <form class="sidebar-logout" action="{{ route('impersonate.stop') }}" method="post">
+                    @csrf
+                    <button class="btn ghost btn-small" type="submit">Return to Admin</button>
+                </form>
+            @endif
+            <form class="sidebar-logout" action="{{ route('logout') }}" method="post">
+                @csrf
+                <button class="btn ghost btn-small" type="submit">Logout</button>
+            </form>
         </aside>
 
         @yield('main')

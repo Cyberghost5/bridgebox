@@ -62,7 +62,12 @@
                     </div>
                     <div class="form-field">
                         <label for="department">Department (optional)</label>
-                        <input id="department" name="department" type="text" value="{{ old('department') }}">
+                        <select id="department" name="department">
+                            <option value="" @selected(!old('department'))>Select a department</option>
+                            @foreach ($departments as $department)
+                                <option value="{{ $department->name }}" @selected(old('department') === $department->name)>{{ $department->name }}</option>
+                            @endforeach
+                        </select>
                         @error('department')
                             <span class="form-error">{{ $message }}</span>
                         @enderror

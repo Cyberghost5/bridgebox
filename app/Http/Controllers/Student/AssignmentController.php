@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Student;
 
 use App\Models\Assignment;
 use App\Models\AssignmentSubmission;
+use App\Models\Subject;
+use App\Models\Topic;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -13,6 +15,69 @@ use App\Http\Controllers\Controller;
 
 class AssignmentController extends Controller
 {
+    public function index(Request $request): View
+    {
+        $student = $request->user();
+        $classId = $student?->school_class_id;
+        $search = $request->string('q')->trim()->toString();
+        $subjectId = $request->integer('subject_id');
+        $topicId = $request->integer('topic_id');
+
+        $subjects = Subject::query()
+            ->whereIn('id', Topic::query()
+                ->where('school_class_id', $classId)
+                ->select('subject_id')
+                ->distinct())
+            ->orderBy('name')
+            ->get();
+
+        $topics = collect();
+        if ($subjectId && $classId) {
+            $topics = Topic::query()
+                ->where('school_class_id', $classId)
+                ->where('subject_id', $subjectId)
+                ->orderBy('title')
+                ->get();
+        }
+
+        $assignments = Assignment::query()
+            ->with([
+                'lesson.topic.subject',
+                'submissions' => function ($query) use ($student) {
+                    $query->where('user_id', $student?->id);
+                },
+            ])
+            ->whereHas('lesson.topic', function ($query) use ($classId) {
+                $query->where('school_class_id', $classId);
+            })
+            ->when($subjectId, function ($query) use ($subjectId) {
+                $query->whereHas('lesson.topic', function ($topicQuery) use ($subjectId) {
+                    $topicQuery->where('subject_id', $subjectId);
+                });
+            })
+            ->when($topicId, function ($query) use ($topicId) {
+                $query->whereHas('lesson', function ($lessonQuery) use ($topicId) {
+                    $lessonQuery->where('topic_id', $topicId);
+                });
+            })
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where('title', 'like', "%{$search}%");
+            })
+            ->orderBy('due_at')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('student.assignments.index', [
+            'student' => $student,
+            'assignments' => $assignments,
+            'subjects' => $subjects,
+            'topics' => $topics,
+            'search' => $search,
+            'selectedSubjectId' => $subjectId ?: null,
+            'selectedTopicId' => $topicId ?: null,
+        ]);
+    }
+
     public function show(Assignment $assignment): View
     {
         $assignment->load('lesson.topic');
@@ -23,6 +88,7 @@ class AssignmentController extends Controller
             ->first();
 
         return view('student.assignments.show', [
+            'student' => auth()->user(),
             'assignment' => $assignment,
             'submission' => $submission,
         ]);

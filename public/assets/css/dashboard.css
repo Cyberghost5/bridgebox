@@ -206,6 +206,15 @@ body::before {
     opacity: 0.75;
 }
 
+.sidebar-logout {
+    margin-top: 10px;
+}
+
+.sidebar-logout .btn {
+    width: 100%;
+    justify-content: center;
+}
+
 .status-dot {
     width: 8px;
     height: 8px;
@@ -350,6 +359,8 @@ body::before {
     opacity: 0;
     transform: translateY(12px);
     animation-delay: var(--d, 0s);
+    text-decoration: none;
+    color: black;
 }
 
 .tab-icon {
@@ -1173,6 +1184,19 @@ body::before {
 
 .table-scroll {
     overflow-x: auto;
+}
+
+tr.row-link {
+    cursor: pointer;
+}
+
+tr.row-link:focus {
+    outline: 2px solid rgba(92, 124, 255, 0.4);
+    outline-offset: -2px;
+}
+
+tr.row-link:hover {
+    background: rgba(76, 107, 161, 0.08);
 }
 
 .data-table {

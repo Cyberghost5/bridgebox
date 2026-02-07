@@ -34,10 +34,17 @@
             </div>
             <div class="panel-body">
                 <div class="table-toolbar">
+                    @php($hasFilters = $search || $selectedClassId)
                     <form class="search-form" method="get" action="{{ route('admin.users.students.index') }}">
                         <input class="search-input" type="text" name="q" placeholder="Search by name or email" value="{{ $search }}">
-                        <button class="btn ghost btn-small" type="submit">Search</button>
-                        @if ($search)
+                        <select class="search-input" name="class_id">
+                            <option value="" @selected(!$selectedClassId)>All classes</option>
+                            @foreach ($classes as $class)
+                                <option value="{{ $class->id }}" @selected($selectedClassId == $class->id)>{{ $class->name }}</option>
+                            @endforeach
+                        </select>
+                        <button class="btn ghost btn-small" type="submit">Filter</button>
+                        @if ($hasFilters)
                             <a class="btn ghost btn-small" href="{{ route('admin.users.students.index') }}">Clear</a>
                         @endif
                     </form>
@@ -55,15 +62,14 @@
                                 <th>Admission ID</th>
                                 <th>Status</th>
                                 <th>Created</th>
-                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($students as $student)
-                                <tr>
+                                <tr class="row-link" data-row-href="{{ route('admin.users.students.show', $student) }}" tabindex="0" role="link" aria-label="View {{ $student->name }}">
                                     <td>{{ $student->name }}</td>
                                     <td>{{ $student->email }}</td>
-                                        <td>{{ $student->schoolClass?->name ?? $student->studentProfile?->class ?? '-' }}</td>
+                                    <td>{{ $student->schoolClass?->name ?? $student->studentProfile?->class ?? '-' }}</td>
                                     <td>{{ $student->studentProfile?->department ?? '-' }}</td>
                                     <td>{{ $student->studentProfile?->admission_id ?? '-' }}</td>
                                     <td>
@@ -71,31 +77,11 @@
                                             {{ $student->is_active ? 'Active' : 'Disabled' }}
                                         </span>
                                     </td>
-                                        <td>{{ $student->created_at?->format('Y-m-d') ?? '-' }}</td>
-                                        <td>
-                                            <div class="table-actions">
-                                                <a class="btn ghost btn-small" href="{{ route('admin.users.students.edit', $student) }}">Edit</a>
-                                                <form method="post" action="{{ route('admin.users.toggle', $student) }}" data-confirm="Are you sure?">
-                                                    @csrf
-                                                    <button class="btn ghost btn-small" type="submit">
-                                                        {{ $student->is_active ? 'Disable' : 'Enable' }}
-                                                    </button>
-                                            </form>
-                                            <form method="post" action="{{ route('admin.users.reset', $student) }}" data-confirm="Reset password for this student?">
-                                                @csrf
-                                                <button class="btn ghost btn-small" type="submit">Reset Password</button>
-                                            </form>
-                                            <form method="post" action="{{ route('admin.users.delete', $student) }}" data-confirm="Delete this student account?">
-                                                @csrf
-                                                @method('delete')
-                                                <button class="btn ghost btn-small" type="submit">Delete</button>
-                                            </form>
-                                        </div>
-                                    </td>
+                                    <td>{{ $student->created_at?->format('Y-m-d') ?? '-' }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td class="table-empty" colspan="8">No students found.</td>
+                                    <td class="table-empty" colspan="7">No students found.</td>
                                 </tr>
                             @endforelse
                         </tbody>

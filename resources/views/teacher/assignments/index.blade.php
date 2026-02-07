@@ -12,6 +12,10 @@
             </div>
             <div class="actions">
                 <a class="btn primary" href="{{ route('teacher.assignments.create') }}">Add Assignment</a>
+                @php($exportQuery = request()->query())
+                <a class="btn ghost" href="{{ route('teacher.assignments.export', array_merge($exportQuery, ['format' => 'csv'])) }}">Export CSV</a>
+                <a class="btn ghost" href="{{ route('teacher.assignments.export', array_merge($exportQuery, ['format' => 'xlsx'])) }}">Export Excel</a>
+                <a class="btn ghost" href="{{ route('teacher.assignments.export', array_merge($exportQuery, ['format' => 'pdf'])) }}">Export PDF</a>
                 <a class="btn ghost" href="{{ route('dashboard.teacher') }}">Back to Dashboard</a>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
@@ -34,10 +38,26 @@
             </div>
             <div class="panel-body">
                 <div class="table-toolbar">
+                    @php($hasFilters = $search || $selectedClassId || $selectedSubjectId || $selectedTopicId)
                     <form class="search-form" method="get" action="{{ route('teacher.assignments.index') }}">
                         <input class="search-input" type="text" name="q" placeholder="Search by title" value="{{ $search }}">
-                        <button class="btn ghost btn-small" type="submit">Search</button>
-                        @if ($search)
+                        <select class="search-input" name="class_id" id="class_id">
+                            <option value="" @selected(!$selectedClassId)>All classes</option>
+                            @foreach ($classes as $class)
+                                <option value="{{ $class->id }}" @selected($selectedClassId == $class->id)>{{ $class->name }}</option>
+                            @endforeach
+                        </select>
+                        <select class="search-input" name="subject_id" id="subject_id" data-subjects-url="{{ route('teacher.subjects.by-class') }}" data-selected-subject="{{ $selectedSubjectId }}">
+                            <option value="" @selected(!$selectedSubjectId)>All subjects</option>
+                            @foreach ($subjects as $subject)
+                                <option value="{{ $subject->id }}" @selected($selectedSubjectId == $subject->id)>{{ $subject->name }}</option>
+                            @endforeach
+                        </select>
+                        <select class="search-input" name="topic_id" id="topic_id" data-topics-url="{{ route('teacher.topics.by-subject') }}" data-selected-topic="{{ $selectedTopicId }}">
+                            <option value="" @selected(!$selectedTopicId)>All topics</option>
+                        </select>
+                        <button class="btn ghost btn-small" type="submit">Filter</button>
+                        @if ($hasFilters)
                             <a class="btn ghost btn-small" href="{{ route('teacher.assignments.index') }}">Clear</a>
                         @endif
                     </form>
@@ -66,6 +86,7 @@
                                     <td>{{ $assignment->due_at?->format('Y-m-d') ?? '-' }}</td>
                                     <td>
                                         <div class="table-actions">
+                                            <a class="btn ghost btn-small" href="{{ route('teacher.assignments.submissions.index', $assignment) }}">Submissions</a>
                                             <a class="btn ghost btn-small" href="{{ route('teacher.assignments.edit', $assignment) }}">Edit</a>
                                             <form method="post" action="{{ route('teacher.assignments.delete', $assignment) }}" data-confirm="Delete this assignment?" style="display:inline-block;">
                                                 @csrf
@@ -89,3 +110,95 @@
         </section>
     </main>
 @endsection
+
+@push('scripts')
+    <script>
+        const subjectSelect = document.getElementById('subject_id');
+        const classSelect = document.getElementById('class_id');
+        const topicSelect = document.getElementById('topic_id');
+        if (subjectSelect && topicSelect) {
+            const defaultSubjectOptions = subjectSelect.innerHTML;
+            const loadTopics = async (selectedTopicId) => {
+                const subjectId = subjectSelect.value;
+                const classId = classSelect ? classSelect.value : '';
+                if (!subjectId) {
+                    topicSelect.innerHTML = '<option value="">All topics</option>';
+                    return;
+                }
+
+                topicSelect.innerHTML = '<option value="">Loading topics...</option>';
+                try {
+                    const url = new URL(topicSelect.dataset.topicsUrl, window.location.origin);
+                    url.searchParams.set('subject_id', subjectId);
+                    if (classId) {
+                        url.searchParams.set('class_id', classId);
+                    }
+                    const response = await fetch(url.toString(), {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                        },
+                        credentials: 'same-origin',
+                    });
+                    const data = response.ok ? await response.json() : [];
+                    let options = '<option value="">All topics</option>';
+                    data.forEach((topic) => {
+                        const selected = selectedTopicId && String(topic.id) === String(selectedTopicId) ? 'selected' : '';
+                        options += `<option value="${topic.id}" ${selected}>${topic.title}</option>`;
+                    });
+                    topicSelect.innerHTML = options;
+                } catch (error) {
+                    topicSelect.innerHTML = '<option value="">All topics</option>';
+                }
+            };
+
+            const loadSubjects = async (selectedSubjectId) => {
+                if (!classSelect) {
+                    return;
+                }
+
+                const classId = classSelect.value;
+                if (!classId) {
+                    subjectSelect.innerHTML = defaultSubjectOptions;
+                    if (selectedSubjectId) {
+                        subjectSelect.value = selectedSubjectId;
+                    }
+                    await loadTopics(topicSelect.dataset.selectedTopic || null);
+                    return;
+                }
+
+                subjectSelect.innerHTML = '<option value="">Loading subjects...</option>';
+                try {
+                    const url = new URL(subjectSelect.dataset.subjectsUrl, window.location.origin);
+                    url.searchParams.set('class_id', classId);
+                    const response = await fetch(url.toString(), {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                        },
+                        credentials: 'same-origin',
+                    });
+                    const data = response.ok ? await response.json() : [];
+                    let options = '<option value="">All subjects</option>';
+                    data.forEach((subject) => {
+                        const selected = selectedSubjectId && String(subject.id) === String(selectedSubjectId) ? 'selected' : '';
+                        options += `<option value="${subject.id}" ${selected}>${subject.name}</option>`;
+                    });
+                    subjectSelect.innerHTML = options;
+                    await loadTopics(topicSelect.dataset.selectedTopic || null);
+                } catch (error) {
+                    subjectSelect.innerHTML = defaultSubjectOptions;
+                    await loadTopics(topicSelect.dataset.selectedTopic || null);
+                }
+            };
+
+            subjectSelect.addEventListener('change', () => loadTopics(null));
+            if (classSelect) {
+                classSelect.addEventListener('change', () => loadSubjects(null));
+            }
+
+            const initialSubject = subjectSelect.dataset.selectedSubject || null;
+            loadSubjects(initialSubject);
+        }
+    </script>
+@endpush

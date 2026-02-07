@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\SchoolClass;
+use App\Models\Section;
 use App\Models\Subject;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -14,14 +17,17 @@ class AdminSubjectController extends Controller
     public function index(Request $request): View
     {
         $search = $request->string('q')->trim()->toString();
+        $sectionId = $request->integer('section_id');
 
         $subjects = Subject::query()
+            ->with('section')
             ->when($search !== '', function ($q) use ($search) {
                 $q->where(function ($subQuery) use ($search) {
                     $subQuery->where('name', 'like', "%{$search}%")
                         ->orWhere('code', 'like', "%{$search}%");
                 });
             })
+            ->when($sectionId, fn ($q) => $q->where('section_id', $sectionId))
             ->orderBy('name')
             ->paginate(10)
             ->withQueryString();
@@ -29,12 +35,16 @@ class AdminSubjectController extends Controller
         return view('admin.subjects.index', [
             'subjects' => $subjects,
             'search' => $search,
+            'sections' => Section::orderBy('name')->get(),
+            'selectedSectionId' => $sectionId ?: null,
         ]);
     }
 
     public function create(): View
     {
-        return view('admin.subjects.create');
+        return view('admin.subjects.create', [
+            'sections' => Section::orderBy('name')->get(),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -42,6 +52,7 @@ class AdminSubjectController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:191',
             'description' => 'nullable|string',
+            'section_id' => 'required|integer|exists:sections,id',
         ]);
 
         $data['code'] = Str::slug($data['name']);
@@ -58,6 +69,7 @@ class AdminSubjectController extends Controller
     {
         return view('admin.subjects.edit', [
             'subject' => $subject,
+            'sections' => Section::orderBy('name')->get(),
         ]);
     }
 
@@ -66,6 +78,7 @@ class AdminSubjectController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:191',
             'description' => 'nullable|string',
+            'section_id' => 'required|integer|exists:sections,id',
         ]);
 
         $data['code'] = Str::slug($data['name']);
@@ -86,5 +99,25 @@ class AdminSubjectController extends Controller
             'message' => 'Subject deleted.',
             'status' => 'success',
         ]);
+    }
+
+    public function byClass(Request $request): JsonResponse
+    {
+        $classId = $request->integer('class_id');
+        if (!$classId) {
+            return response()->json([]);
+        }
+
+        $class = SchoolClass::with('section')->find($classId);
+        if (!$class || !$class->section_id) {
+            return response()->json([]);
+        }
+
+        $subjects = Subject::query()
+            ->where('section_id', $class->section_id)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return response()->json($subjects);
     }
 }

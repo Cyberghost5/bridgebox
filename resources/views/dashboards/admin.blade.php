@@ -1,4 +1,4 @@
-@extends('admin.layout')
+﻿@extends('admin.layout')
 
 @section('title', 'Admin Dashboard')
 
@@ -9,6 +9,7 @@
     $serverRunning = ($status['server'] ?? '') === 'Running';
     $hotspotLabel = strtolower((string) ($status['hotspot'] ?? ''));
     $hotspotOn = str_starts_with($hotspotLabel, 'on');
+    $stats = $stats ?? [];
 @endphp
 
 @section('main')
@@ -200,6 +201,98 @@
                         <button class="btn ghost" type="submit" @disabled($sudoBlocked)>Apply to device</button>
                     </form>
                 </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header">
+                <h4>Academic Overview</h4>
+                <span class="badge blue">Counts</span>
+            </div>
+            <div class="panel-body">
+                <section class="quick-tabs" style="padding:0;">
+                    <a class="tab" style="--accent: #4a7bd1; --d: 0.05s;" href="{{ route('admin.classes.index') }}">
+                        <div class="tab-icon">
+                            <i class="fa-solid fa-people-roof" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <p>Classes</p>
+                            <span>{{ $stats['classes'] ?? 0 }}</span>
+                        </div>
+                    </a>
+                    <a class="tab" style="--accent: #56c1a7; --d: 0.1s;" href="{{ route('admin.users.teachers.index') }}">
+                        <div class="tab-icon">
+                            <i class="fa-solid fa-chalkboard-user" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <p>Teachers</p>
+                            <span>{{ $stats['teachers'] ?? 0 }}</span>
+                        </div>
+                    </a>
+                    <a class="tab" style="--accent: #e56b6f; --d: 0.15s;" href="{{ route('admin.users.students.index') }}">
+                        <div class="tab-icon">
+                            <i class="fa-solid fa-user-graduate" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <p>Students</p>
+                            <span>{{ $stats['students'] ?? 0 }}</span>
+                        </div>
+                    </a>
+                    <a class="tab" style="--accent: #f2b84b; --d: 0.2s;" href="{{ route('admin.subjects.index') }}">
+                        <div class="tab-icon">
+                            <i class="fa-solid fa-book" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <p>Subjects</p>
+                            <span>{{ $stats['subjects'] ?? 0 }}</span>
+                        </div>
+                    </a>
+                    <a class="tab" style="--accent: #5b8de3; --d: 0.25s;" href="{{ route('admin.topics.index') }}">
+                        <div class="tab-icon">
+                            <i class="fa-solid fa-list-check" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <p>Topics</p>
+                            <span>{{ $stats['topics'] ?? 0 }}</span>
+                        </div>
+                    </a>
+                    <a class="tab" style="--accent: #3bb98d; --d: 0.3s;" href="{{ route('admin.topics.index') }}">
+                        <div class="tab-icon">
+                            <i class="fa-solid fa-book-open" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <p>Lessons</p>
+                            <span>{{ $stats['lessons'] ?? 0 }}</span>
+                        </div>
+                    </a>
+                    <a class="tab" style="--accent: #f08b5a; --d: 0.35s;" href="{{ route('admin.assignments.index') }}">
+                        <div class="tab-icon">
+                            <i class="fa-solid fa-file-lines" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <p>Assignments</p>
+                            <span>{{ $stats['assignments'] ?? 0 }}</span>
+                        </div>
+                    </a>
+                    <a class="tab" style="--accent: #6d82f6; --d: 0.4s;" href="{{ route('admin.quizzes.index') }}">
+                        <div class="tab-icon">
+                            <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <p>Quizzes</p>
+                            <span>{{ $stats['quizzes'] ?? 0 }}</span>
+                        </div>
+                    </a>
+                    <a class="tab" style="--accent: #e45757; --d: 0.45s;" href="{{ route('admin.exams.index') }}">
+                        <div class="tab-icon">
+                            <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <p>Exams</p>
+                            <span>{{ $stats['exams'] ?? 0 }}</span>
+                        </div>
+                    </a>
+                </section>
             </div>
         </section>
 

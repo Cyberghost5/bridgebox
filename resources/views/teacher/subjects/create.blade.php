@@ -8,7 +8,7 @@
             <div class="greeting">
                 <p class="eyebrow">Teacher</p>
                 <h1>Create Subject</h1>
-                <p class="subtext">Add a subject to a class.</p>
+                <p class="subtext">Add a subject to your section.</p>
             </div>
             <div class="actions">
                 <a class="btn ghost" href="{{ route('teacher.subjects.index') }}">Back to Subjects</a>
@@ -33,6 +33,17 @@
                         @error('name')
                             <span class="form-error">{{ $message }}</span>
                         @enderror
+                    </div>
+
+                    <div class="form-field">
+                        <label for="section_id">Section</label>
+                        <select id="section_id" name="section_id" disabled>
+                            @forelse ($sections as $section)
+                                <option value="{{ $section->id }}" @selected($selectedSectionId == $section->id)>{{ $section->name }}</option>
+                            @empty
+                                <option value="">No section assigned</option>
+                            @endforelse
+                        </select>
                     </div>
 
                     <div class="form-field form-field-full">

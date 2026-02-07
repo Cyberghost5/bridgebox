@@ -34,10 +34,17 @@
             </div>
             <div class="panel-body">
                 <div class="table-toolbar">
+                    @php($hasFilters = $search || $selectedClassId)
                     <form class="search-form" method="get" action="{{ route('admin.users.teachers.index') }}">
                         <input class="search-input" type="text" name="q" placeholder="Search by name or email" value="{{ $search }}">
-                        <button class="btn ghost btn-small" type="submit">Search</button>
-                        @if ($search)
+                        <select class="search-input" name="class_id">
+                            <option value="" @selected(!$selectedClassId)>All classes</option>
+                            @foreach ($classes as $class)
+                                <option value="{{ $class->id }}" @selected($selectedClassId == $class->id)>{{ $class->name }}</option>
+                            @endforeach
+                        </select>
+                        <button class="btn ghost btn-small" type="submit">Filter</button>
+                        @if ($hasFilters)
                             <a class="btn ghost btn-small" href="{{ route('admin.users.teachers.index') }}">Clear</a>
                         @endif
                     </form>
@@ -72,6 +79,10 @@
                                         <td>{{ $teacher->created_at?->format('Y-m-d') ?? '-' }}</td>
                                         <td>
                                             <div class="table-actions">
+                                                <form method="post" action="{{ route('admin.users.impersonate', $teacher) }}" data-confirm="Login as this teacher?">
+                                                    @csrf
+                                                    <button class="btn ghost btn-small" type="submit" @disabled(!$teacher->is_active)>Login As</button>
+                                                </form>
                                                 <a class="btn ghost btn-small" href="{{ route('admin.users.teachers.edit', $teacher) }}">Edit</a>
                                                 <form method="post" action="{{ route('admin.users.toggle', $teacher) }}" data-confirm="Are you sure?">
                                                     @csrf

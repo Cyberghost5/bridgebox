@@ -39,9 +39,9 @@
                     <div class="form-field">
                         <label for="school_class_id">Class</label>
                         <select id="school_class_id" name="school_class_id" required>
-                            <option value="" disabled @selected(!old('school_class_id'))>Select a class</option>
+                            <option value="" disabled @selected(!old('school_class_id', $classes->first()?->id))>Select a class</option>
                             @foreach ($classes as $class)
-                                <option value="{{ $class->id }}" @selected(old('school_class_id') == $class->id)>{{ $class->name }}</option>
+                                <option value="{{ $class->id }}" @selected(old('school_class_id', $classes->first()?->id) == $class->id)>{{ $class->name }}</option>
                             @endforeach
                         </select>
                         @error('school_class_id')
@@ -51,11 +51,8 @@
 
                     <div class="form-field">
                         <label for="subject_id">Subject</label>
-                        <select id="subject_id" name="subject_id" required>
-                            <option value="" disabled @selected(!old('subject_id'))>Select a subject</option>
-                            @foreach ($subjects as $subject)
-                                <option value="{{ $subject->id }}" @selected(old('subject_id') == $subject->id)>{{ $subject->name }}</option>
-                            @endforeach
+                        <select id="subject_id" name="subject_id" required data-subjects-url="{{ route('teacher.subjects.by-class') }}" data-selected-subject="{{ old('subject_id') }}">
+                            <option value="" disabled @selected(!old('subject_id'))>Select a class first</option>
                         </select>
                         @error('subject_id')
                             <span class="form-error">{{ $message }}</span>
@@ -126,8 +123,41 @@
         const subjectSelect = document.getElementById('subject_id');
         const classSelect = document.getElementById('school_class_id');
         const topicSelect = document.getElementById('topic_id');
-        if (subjectSelect && topicSelect) {
+        if (subjectSelect && topicSelect && classSelect) {
             const topicsUrl = topicSelect.dataset.topicsUrl;
+            const loadSubjects = async (selectedSubjectId) => {
+                const classId = classSelect.value;
+                if (!classId) {
+                    subjectSelect.innerHTML = '<option value="" disabled selected>Select a class first</option>';
+                    topicSelect.innerHTML = '<option value="" disabled selected>Select a subject first</option>';
+                    return;
+                }
+
+                subjectSelect.innerHTML = '<option value="" disabled selected>Loading subjects...</option>';
+                try {
+                    const url = new URL(subjectSelect.dataset.subjectsUrl, window.location.origin);
+                    url.searchParams.set('class_id', classId);
+                    const response = await fetch(url.toString(), {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                        },
+                        credentials: 'same-origin',
+                    });
+                    const data = response.ok ? await response.json() : [];
+                    let options = '<option value="" disabled>Select a subject</option>';
+                    data.forEach((subject) => {
+                        const selected = selectedSubjectId && String(subject.id) === String(selectedSubjectId) ? 'selected' : '';
+                        options += `<option value="${subject.id}" ${selected}>${subject.name}</option>`;
+                    });
+                    subjectSelect.innerHTML = options;
+                    await loadTopics(topicSelect.dataset.selectedTopic || null);
+                } catch (error) {
+                    subjectSelect.innerHTML = '<option value="" disabled selected>Unable to load subjects</option>';
+                    topicSelect.innerHTML = '<option value="" disabled selected>Select a subject first</option>';
+                }
+            };
+
             const loadTopics = async (selectedTopicId) => {
                 const subjectId = subjectSelect.value;
                 const classId = classSelect ? classSelect.value : '';
@@ -162,13 +192,11 @@
                 }
             };
 
+            classSelect.addEventListener('change', () => loadSubjects(null));
             subjectSelect.addEventListener('change', () => loadTopics(null));
-            if (classSelect) {
-                classSelect.addEventListener('change', () => loadTopics(topicSelect.dataset.selectedTopic || null));
-            }
 
-            const initialSelected = topicSelect.dataset.selectedTopic || null;
-            loadTopics(initialSelected);
+            const initialSubject = subjectSelect.dataset.selectedSubject || null;
+            loadSubjects(initialSubject);
         }
     </script>
 @endpush

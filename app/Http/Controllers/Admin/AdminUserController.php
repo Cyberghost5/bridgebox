@@ -7,10 +7,13 @@ use App\Http\Requests\StoreStudentRequest;
 use App\Http\Requests\UpdateTeacherRequest;
 use App\Http\Requests\UpdateStudentRequest;
 use App\Models\AdminActionLog;
+use App\Models\Department;
 use App\Models\SchoolClass;
 use App\Models\User;
+use App\Services\StudentProgressService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -27,6 +30,7 @@ class AdminUserController extends Controller
     public function teachers(Request $request): View
     {
         $search = $request->string('q')->trim()->toString();
+        $classId = $request->integer('class_id');
 
         $teachers = User::query()
             ->where('role', User::ROLE_TEACHER)
@@ -37,6 +41,9 @@ class AdminUserController extends Controller
                         ->orWhere('email', 'like', '%' . $search . '%');
                 });
             })
+            ->when($classId, function ($query) use ($classId) {
+                $query->where('school_class_id', $classId);
+            })
             ->orderBy('name')
             ->paginate(10)
             ->withQueryString();
@@ -44,12 +51,15 @@ class AdminUserController extends Controller
         return view('admin.users.teachers.index', [
             'teachers' => $teachers,
             'search' => $search,
+            'classes' => SchoolClass::orderBy('name')->get(),
+            'selectedClassId' => $classId ?: null,
         ]);
     }
 
     public function students(Request $request): View
     {
         $search = $request->string('q')->trim()->toString();
+        $classId = $request->integer('class_id');
 
         $students = User::query()
             ->where('role', User::ROLE_STUDENT)
@@ -60,6 +70,9 @@ class AdminUserController extends Controller
                         ->orWhere('email', 'like', '%' . $search . '%');
                 });
             })
+            ->when($classId, function ($query) use ($classId) {
+                $query->where('school_class_id', $classId);
+            })
             ->orderBy('name')
             ->paginate(10)
             ->withQueryString();
@@ -67,6 +80,8 @@ class AdminUserController extends Controller
         return view('admin.users.students.index', [
             'students' => $students,
             'search' => $search,
+            'classes' => SchoolClass::orderBy('name')->get(),
+            'selectedClassId' => $classId ?: null,
         ]);
     }
 
@@ -74,6 +89,19 @@ class AdminUserController extends Controller
     {
         return view('admin.users.students.create', [
             'classes' => SchoolClass::orderBy('name')->get(),
+            'departments' => Department::orderBy('name')->get(),
+        ]);
+    }
+
+    public function showStudent(User $user, StudentProgressService $progressService): View
+    {
+        abort_unless($user->role === User::ROLE_STUDENT, 404);
+
+        $progress = $progressService->build($user);
+
+        return view('admin.users.students.show', [
+            'student' => $user->load(['studentProfile', 'schoolClass']),
+            ...$progress,
         ]);
     }
 
@@ -205,6 +233,62 @@ class AdminUserController extends Controller
         ]);
     }
 
+    public function impersonate(Request $request, User $user): RedirectResponse
+    {
+        $admin = $request->user();
+        abort_unless($admin && $admin->role === User::ROLE_ADMIN, 403);
+
+        if (!in_array($user->role, [User::ROLE_TEACHER, User::ROLE_STUDENT], true)) {
+            abort(404);
+        }
+
+        if ($user->is_active === false) {
+            return back()->with([
+                'status' => 'error',
+                'message' => 'This account is disabled and cannot be accessed.',
+            ]);
+        }
+
+        $request->session()->put('impersonator_id', $admin->id);
+        $request->session()->put('impersonator_name', $admin->name);
+
+        Auth::login($user);
+        $request->session()->regenerate();
+        $request->session()->put('impersonator_id', $admin->id);
+        $request->session()->put('impersonator_name', $admin->name);
+
+        return redirect()->route('dashboard.' . $user->role)->with([
+            'status' => 'success',
+            'message' => 'You are now logged in as ' . $user->name . '.',
+        ]);
+    }
+
+    public function stopImpersonation(Request $request): RedirectResponse
+    {
+        $impersonatorId = $request->session()->get('impersonator_id');
+        if (!$impersonatorId) {
+            return redirect()->route('landing');
+        }
+
+        $admin = User::find($impersonatorId);
+        $request->session()->forget(['impersonator_id', 'impersonator_name']);
+
+        if (!$admin || $admin->role !== User::ROLE_ADMIN) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return redirect()->route('landing');
+        }
+
+        Auth::login($admin);
+        $request->session()->regenerate();
+
+        return redirect()->route('dashboard.admin')->with([
+            'status' => 'success',
+            'message' => 'Impersonation ended.',
+        ]);
+    }
+
     public function editStudent(User $user): View
     {
         abort_unless($user->role === User::ROLE_STUDENT, 404);
@@ -212,6 +296,19 @@ class AdminUserController extends Controller
         return view('admin.users.students.edit', [
             'student' => $user->load(['studentProfile', 'schoolClass']),
             'classes' => SchoolClass::orderBy('name')->get(),
+            'departments' => Department::orderBy('name')->get(),
+        ]);
+    }
+
+    public function progressStudent(User $user, StudentProgressService $progressService): View
+    {
+        abort_unless($user->role === User::ROLE_STUDENT, 404);
+
+        $progress = $progressService->build($user);
+
+        return view('admin.users.students.progress', [
+            'student' => $user->load(['studentProfile', 'schoolClass']),
+            ...$progress,
         ]);
     }
 

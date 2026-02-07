@@ -61,9 +61,18 @@
                             <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
+                    @php($currentDepartment = old('department', $student->studentProfile?->department))
                     <div class="form-field">
                         <label for="department">Department (optional)</label>
-                        <input id="department" name="department" type="text" value="{{ old('department', $student->studentProfile?->department) }}">
+                        <select id="department" name="department">
+                            <option value="" @selected(!$currentDepartment)>Select a department</option>
+                            @if ($currentDepartment && !$departments->contains('name', $currentDepartment))
+                                <option value="{{ $currentDepartment }}" selected>{{ $currentDepartment }}</option>
+                            @endif
+                            @foreach ($departments as $department)
+                                <option value="{{ $department->name }}" @selected($currentDepartment === $department->name)>{{ $department->name }}</option>
+                            @endforeach
+                        </select>
                         @error('department')
                             <span class="form-error">{{ $message }}</span>
                         @enderror

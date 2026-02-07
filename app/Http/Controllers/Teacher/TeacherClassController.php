@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
 use App\Models\SchoolClass;
+use App\Models\Section;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -15,6 +16,7 @@ class TeacherClassController extends Controller
         $search = $request->string('q')->trim()->toString();
 
         $classes = SchoolClass::query()
+            ->with('section')
             ->when($search !== '', function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('slug', 'like', "%{$search}%");
@@ -31,7 +33,9 @@ class TeacherClassController extends Controller
 
     public function create(): View
     {
-        return view('teacher.classes.create');
+        return view('teacher.classes.create', [
+            'sections' => Section::orderBy('name')->get(),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -40,6 +44,7 @@ class TeacherClassController extends Controller
             'name' => 'required|string|max:191',
             'slug' => 'nullable|string|max:191|unique:school_classes,slug',
             'description' => 'nullable|string',
+            'section_id' => 'required|integer|exists:sections,id',
         ]);
 
         if (empty($data['slug'])) {
@@ -56,7 +61,10 @@ class TeacherClassController extends Controller
 
     public function edit(SchoolClass $class): View
     {
-        return view('teacher.classes.edit', ['class' => $class]);
+        return view('teacher.classes.edit', [
+            'class' => $class,
+            'sections' => Section::orderBy('name')->get(),
+        ]);
     }
 
     public function update(Request $request, SchoolClass $class): RedirectResponse
@@ -65,6 +73,7 @@ class TeacherClassController extends Controller
             'name' => 'required|string|max:191',
             'slug' => 'nullable|string|max:191|unique:school_classes,slug,' . $class->id,
             'description' => 'nullable|string',
+            'section_id' => 'required|integer|exists:sections,id',
         ]);
 
         if (empty($data['slug'])) {

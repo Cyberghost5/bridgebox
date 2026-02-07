@@ -34,6 +34,9 @@
                 <a class="nav-item {{ (request()->routeIs('admin.subjects.*') || $navSection === 'subjects') ? 'active' : '' }}" href="{{ route('admin.subjects.index') }}" aria-label="Manage subjects">
                     <i class="fa-solid fa-book" aria-hidden="true"></i>
                 </a>
+                <a class="nav-item {{ (request()->routeIs('admin.departments.*') || $navSection === 'departments') ? 'active' : '' }}" href="{{ route('admin.departments.index') }}" aria-label="Manage departments">
+                    <i class="fa-solid fa-building-columns" aria-hidden="true"></i>
+                </a>
                 <a class="nav-item {{ (request()->routeIs('admin.topics.*') || $navSection === 'topics') ? 'active' : '' }}" href="{{ route('admin.topics.index') }}" aria-label="Manage topics">
                     <i class="fa-solid fa-list-check" aria-hidden="true"></i>
                 </a>
@@ -46,9 +49,9 @@
                 <a class="nav-item {{ (request()->routeIs('admin.exams.*') || $navSection === 'exams') ? 'active' : '' }}" href="{{ route('admin.exams.index') }}" aria-label="Manage exams">
                     <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
                 </a>
-                <button class="nav-item" aria-label="System status">
+                <!-- <button class="nav-item" aria-label="System status">
                     <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
-                </button>
+                </button> -->
                 <a class="nav-item {{ (request()->routeIs('admin.logs.*') || $navSection === 'logs') ? 'active' : '' }}" href="{{ route('admin.logs.index') }}" aria-label="Admin logs">
                     <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
                 </a>

@@ -14,7 +14,7 @@
             <div class="greeting">
                 <p class="eyebrow">{{ ucfirst($type) }}</p>
                 <h1>Edit Question</h1>
-                <p class="subtext">Update the question and options.</p>
+                <p class="subtext">Update the question for {{ $assessment->title }}.</p>
             </div>
             <div class="actions">
                 <a class="btn ghost" href="{{ route($routePrefix . '.questions.index', $assessment) }}">Back to Questions</a>

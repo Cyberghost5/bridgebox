@@ -34,10 +34,17 @@
             </div>
             <div class="panel-body">
                 <div class="table-toolbar">
+                    @php($hasFilters = $search || $selectedSectionId)
                     <form class="search-form" method="get" action="{{ route('teacher.subjects.index') }}">
                         <input class="search-input" type="text" name="q" placeholder="Search by name or code" value="{{ $search }}">
+                        <select class="search-input" name="section_id" @disabled($sections->count() === 0)>
+                            <option value="" @selected(!$selectedSectionId)>All sections</option>
+                            @foreach ($sections as $section)
+                                <option value="{{ $section->id }}" @selected($selectedSectionId == $section->id)>{{ $section->name }}</option>
+                            @endforeach
+                        </select>
                         <button class="btn ghost btn-small" type="submit">Search</button>
-                        @if ($search)
+                        @if ($hasFilters)
                             <a class="btn ghost btn-small" href="{{ route('teacher.subjects.index') }}">Clear</a>
                         @endif
                     </form>
@@ -50,6 +57,7 @@
                             <tr>
                                 <th>Name</th>
                                 <th>Slug</th>
+                                <th>Section</th>
                                 <th>Description</th>
                                 <th>Created</th>
                                 <th>Actions</th>
@@ -60,6 +68,7 @@
                                 <tr>
                                     <td>{{ $subject->name }}</td>
                                     <td>{{ $subject->code ?: '-' }}</td>
+                                    <td>{{ $subject->section?->name ?? '-' }}</td>
                                     <td>{{ Str::limit($subject->description, 60) }}</td>
                                     <td>{{ $subject->created_at?->format('Y-m-d') ?? '-' }}</td>
                                     <td>
@@ -75,7 +84,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td class="table-empty" colspan="5">No subjects found.</td>
+                                    <td class="table-empty" colspan="6">No subjects found.</td>
                                 </tr>
                             @endforelse
                         </tbody>

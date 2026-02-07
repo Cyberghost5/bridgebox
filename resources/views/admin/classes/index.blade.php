@@ -51,6 +51,7 @@
                                 <th>Name</th>
                                 <th>Slug</th>
                                 <th>Description</th>
+                                <th>Section</th>
                                 <th>Created</th>
                                 <th>Actions</th>
                             </tr>
@@ -61,6 +62,7 @@
                                     <td>{{ $class->name }}</td>
                                     <td>{{ $class->slug }}</td>
                                     <td>{{ Str::limit($class->description, 60) }}</td>
+                                    <td>{{ $class->section?->name ?? '-' }}</td>
                                     <td>{{ $class->created_at?->format('Y-m-d') ?? '-' }}</td>
                                     <td>
                                         <div class="table-actions">

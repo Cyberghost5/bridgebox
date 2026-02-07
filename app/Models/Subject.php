@@ -13,5 +13,16 @@ class Subject extends Model
         'name',
         'code',
         'description',
+        'section_id',
     ];
+
+    public function section()
+    {
+        return $this->belongsTo(Section::class, 'section_id');
+    }
+
+    public function topics()
+    {
+        return $this->hasMany(Topic::class, 'subject_id');
+    }
 }

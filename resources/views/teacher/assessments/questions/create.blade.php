@@ -9,7 +9,7 @@
             <div class="greeting">
                 <p class="eyebrow">{{ ucfirst($type) }}</p>
                 <h1>Add Question</h1>
-                <p class="subtext">Add a multiple-choice question.</p>
+                <p class="subtext">Add a multiple-choice question for {{ $assessment->title }}.</p>
             </div>
             <div class="actions">
                 <a class="btn ghost" href="{{ route($routePrefix . '.questions.index', $assessment) }}">Back to Questions</a>

@@ -43,6 +43,8 @@
                                 <th>#</th>
                                 <th>Student</th>
                                 <th>Submitted</th>
+                                <th>Score</th>
+                                <th>Status</th>
                                 <th>Text</th>
                                 <th>File</th>
                                 <th>Actions</th>
@@ -54,10 +56,19 @@
                                     <td>{{ $submissions->firstItem() + $index }}</td>
                                     <td>{{ $submission->user?->name ?? 'Unknown' }}</td>
                                     <td>{{ $submission->submitted_at?->format('Y-m-d H:i') ?? '-' }}</td>
+                                    <td>
+                                        @if ($submission->score !== null)
+                                            {{ $submission->score }}{{ $assignment->max_points ? ' / ' . $assignment->max_points : '' }}
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td>{{ $submission->status ?? 'pending' }}</td>
                                     <td>{{ $submission->content ? Str::limit($submission->content, 50) : '-' }}</td>
                                     <td>{{ $submission->file_name ?: '-' }}</td>
                                     <td>
                                         <div class="table-actions">
+                                            <a class="btn ghost btn-small" href="{{ route('admin.assignments.submissions.show', [$assignment, $submission]) }}">Grade</a>
                                             @if ($submission->file_path)
                                                 <a class="btn ghost btn-small" href="{{ route('admin.assignments.submissions.download', [$assignment, $submission]) }}">Download</a>
                                             @endif
@@ -71,7 +82,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td class="table-empty" colspan="6">No submissions found.</td>
+                                    <td class="table-empty" colspan="8">No submissions found.</td>
                                 </tr>
                             @endforelse
                         </tbody>

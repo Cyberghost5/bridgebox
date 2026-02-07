@@ -34,10 +34,23 @@
             </div>
             <div class="panel-body">
                 <div class="table-toolbar">
+                    @php($hasFilters = $search || $selectedClassId || $selectedSubjectId)
                     <form class="search-form" method="get" action="{{ route('admin.topics.index') }}">
                         <input class="search-input" type="text" name="q" placeholder="Search by title" value="{{ $search }}">
-                        <button class="btn ghost btn-small" type="submit">Search</button>
-                        @if ($search)
+                        <select class="search-input" name="class_id">
+                            <option value="" @selected(!$selectedClassId)>All classes</option>
+                            @foreach ($classes as $class)
+                                <option value="{{ $class->id }}" @selected($selectedClassId == $class->id)>{{ $class->name }}</option>
+                            @endforeach
+                        </select>
+                        <select class="search-input" name="subject_id">
+                            <option value="" @selected(!$selectedSubjectId)>All subjects</option>
+                            @foreach ($subjects as $subject)
+                                <option value="{{ $subject->id }}" @selected($selectedSubjectId == $subject->id)>{{ $subject->name }}</option>
+                            @endforeach
+                        </select>
+                        <button class="btn ghost btn-small" type="submit">Filter</button>
+                        @if ($hasFilters)
                             <a class="btn ghost btn-small" href="{{ route('admin.topics.index') }}">Clear</a>
                         @endif
                     </form>

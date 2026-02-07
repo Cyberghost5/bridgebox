@@ -8,7 +8,7 @@
             <div class="greeting">
                 <p class="eyebrow">Teacher</p>
                 <h1>Edit Subject</h1>
-                <p class="subtext">Update subject details.</p>
+                <p class="subtext">Update subject details for your section.</p>
             </div>
             <div class="actions">
                 <a class="btn ghost" href="{{ route('teacher.subjects.index') }}">Back to Subjects</a>
@@ -34,6 +34,15 @@
                         @error('name')
                             <span class="form-error">{{ $message }}</span>
                         @enderror
+                    </div>
+
+                    <div class="form-field">
+                        <label for="section_id">Section</label>
+                        <select id="section_id" name="section_id" disabled>
+                            @foreach ($sections as $section)
+                                <option value="{{ $section->id }}" @selected($subject->section_id == $section->id)>{{ $section->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
 
                     <div class="form-field form-field-full">
