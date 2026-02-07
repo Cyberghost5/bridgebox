@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BridgeBox Access</title>
+    <link rel="icon" type="image/png" href="{{ asset('assets/images/favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('assets/images/favicon.png') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
 </head>
 <body class="auth-body" data-screen="splash">

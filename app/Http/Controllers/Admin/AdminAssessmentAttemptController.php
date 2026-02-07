@@ -67,13 +67,23 @@ class AdminAssessmentAttemptController extends Controller
             ->withQueryString();
 
         $classes = SchoolClass::orderBy('name')->get();
-        $subjects = Subject::orderBy('name')->get();
+        $subjectsQuery = Subject::orderBy('name');
+        if ($classId) {
+            $sectionId = SchoolClass::whereKey($classId)->value('section_id');
+            if ($sectionId) {
+                $subjectsQuery->where('section_id', $sectionId);
+            }
+        }
+        $subjects = $subjectsQuery->get();
+
         $topics = collect();
         if ($subjectId) {
-            $topics = Topic::query()
-                ->where('subject_id', $subjectId)
-                ->orderBy('title')
-                ->get();
+            $topicsQuery = Topic::query()
+                ->where('subject_id', $subjectId);
+            if ($classId) {
+                $topicsQuery->where('school_class_id', $classId);
+            }
+            $topics = $topicsQuery->orderBy('title')->get();
         }
 
         $assessments = Assessment::query()

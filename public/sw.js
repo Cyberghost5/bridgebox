@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bridgebox-offline-v12';
+const CACHE_NAME = 'bridgebox-offline-v13';
 
 const PRECACHE_URLS = [
     '/',
@@ -21,7 +21,7 @@ const PRECACHE_URLS = [
     '/assets/fonts/sora-500.ttf',
     '/assets/fonts/sora-600.ttf',
     '/assets/fonts/sora-700.ttf',
-    '/favicon.ico'
+    '/assets/images/favicon.png'
 ];
 
 self.addEventListener('install', (event) => {

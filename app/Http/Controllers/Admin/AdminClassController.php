@@ -14,6 +14,7 @@ class AdminClassController extends Controller
     public function index(Request $request): View
     {
         $search = $request->string('q')->trim()->toString();
+        $sectionId = $request->integer('section_id');
 
         $classes = SchoolClass::query()
             ->with('section')
@@ -21,6 +22,7 @@ class AdminClassController extends Controller
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('slug', 'like', "%{$search}%");
             })
+            ->when($sectionId, fn ($q) => $q->where('section_id', $sectionId))
             ->orderBy('name')
             ->paginate(10)
             ->withQueryString();
@@ -28,6 +30,8 @@ class AdminClassController extends Controller
         return view('admin.classes.index', [
             'classes' => $classes,
             'search' => $search,
+            'sections' => Section::orderBy('name')->get(),
+            'selectedSectionId' => $sectionId ?: null,
         ]);
     }
 

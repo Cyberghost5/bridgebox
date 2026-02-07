@@ -73,15 +73,18 @@ class TeacherAssessmentAttemptController extends Controller
             ? SchoolClass::whereKey($teacherClassId)->orderBy('name')->get()
             : collect();
 
-        $subjects = $teacherClassId
-            ? Subject::query()
-                ->whereIn('id', Topic::query()
-                    ->where('school_class_id', $teacherClassId)
-                    ->select('subject_id')
-                    ->distinct())
-                ->orderBy('name')
-                ->get()
-            : collect();
+        $subjectsQuery = Subject::orderBy('name');
+        if ($teacherClassId) {
+            $sectionId = SchoolClass::whereKey($teacherClassId)->value('section_id');
+            if ($sectionId) {
+                $subjectsQuery->where('section_id', $sectionId);
+            } else {
+                $subjectsQuery->whereRaw('1 = 0');
+            }
+        } else {
+            $subjectsQuery->whereRaw('1 = 0');
+        }
+        $subjects = $subjectsQuery->get();
 
         $topics = collect();
         if ($subjectId && $teacherClassId) {

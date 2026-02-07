@@ -23,7 +23,9 @@ class TeacherDashboardController extends Controller
             ? User::where('role', User::ROLE_STUDENT)->where('school_class_id', $classId)->count()
             : 0;
         $classesCount = $classId ? 1 : 0;
-        $subjectsCount = Subject::count();
+        $subjectsCount = $teacherClass?->section_id
+            ? Subject::where('section_id', $teacherClass->section_id)->count()
+            : 0;
         $topicsCount = $classId ? Topic::where('school_class_id', $classId)->count() : 0;
         $assignmentsCount = $classId
             ? Assignment::whereHas('lesson.topic', function ($query) use ($classId) {

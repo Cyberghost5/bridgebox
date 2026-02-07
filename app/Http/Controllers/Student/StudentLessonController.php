@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Models\Lesson;
+use App\Models\SchoolClass;
 use App\Models\Subject;
 use App\Models\Topic;
 use Illuminate\Http\Request;
@@ -16,6 +17,7 @@ class StudentLessonController extends Controller
     {
         $student = $request->user();
         $classId = $student?->school_class_id;
+        $sectionId = $classId ? SchoolClass::whereKey($classId)->value('section_id') : null;
         $search = $request->string('q')->trim()->toString();
         $subjectId = $request->integer('subject_id');
         $topicId = $request->integer('topic_id');
@@ -25,10 +27,23 @@ class StudentLessonController extends Controller
                 ->where('school_class_id', $classId)
                 ->select('subject_id')
                 ->distinct())
+            ->when($sectionId, fn ($query) => $query->where('section_id', $sectionId))
             ->orderBy('name')
             ->get();
 
         $topics = collect();
+        if ($subjectId && $classId) {
+            if ($sectionId) {
+                $subjectMatches = Subject::query()
+                    ->whereKey($subjectId)
+                    ->where('section_id', $sectionId)
+                    ->exists();
+                if (!$subjectMatches) {
+                    $subjectId = null;
+                    $topicId = null;
+                }
+            }
+        }
         if ($subjectId && $classId) {
             $topics = Topic::query()
                 ->where('school_class_id', $classId)

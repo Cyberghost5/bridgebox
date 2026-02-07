@@ -19,18 +19,18 @@ class DatabaseSeeder extends Seeder
     {
         $users = [
             [
-                'name' => 'BridgeBox Admin',
-                'email' => 'admin@bridgebox.local',
+                'name' => 'Amina Yusuf',
+                'email' => 'amina.yusuf@bridgebox.edu',
                 'role' => 'admin',
             ],
             [
-                'name' => 'BridgeBox Teacher',
-                'email' => 'teacher@bridgebox.local',
+                'name' => 'Chinedu Okoro',
+                'email' => 'chinedu.okoro@bridgebox.edu',
                 'role' => 'teacher',
             ],
             [
-                'name' => 'BridgeBox Student',
-                'email' => 'student@bridgebox.local',
+                'name' => 'Zainab Bello',
+                'email' => 'zainab.bello@bridgebox.edu',
                 'role' => 'student',
             ],
         ];

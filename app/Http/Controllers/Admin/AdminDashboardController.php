@@ -6,6 +6,7 @@ use App\Models\Assessment;
 use App\Models\Assignment;
 use App\Models\Lesson;
 use App\Models\SchoolClass;
+use App\Models\Section;
 use App\Models\Subject;
 use App\Models\Topic;
 use App\Models\User;
@@ -34,11 +35,17 @@ class AdminDashboardController extends Controller
             'exams' => Assessment::where('type', Assessment::TYPE_EXAM)->count(),
         ];
 
+        $sections = Section::query()
+            ->withCount(['classes', 'subjects'])
+            ->orderBy('name')
+            ->get();
+
         return view('dashboards.admin', [
             'status' => $status,
             'actionsEnabled' => $actionsEnabled,
             'sudoAllowed' => $sudoAllowed,
             'stats' => $stats,
+            'sections' => $sections,
         ]);
     }
 

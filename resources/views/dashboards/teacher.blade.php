@@ -25,6 +25,9 @@
                         <p class="teacher-class-meta">
                             {{ $teacherClass?->description ?: 'Assign a class to unlock student lists and class-specific content.' }}
                         </p>
+                        <p class="teacher-class-meta">
+                            Section: {{ $teacherClass?->section?->name ?? 'Not set' }}
+                        </p>
                     </div>
                     <div class="teacher-class-stats">
                         <div>

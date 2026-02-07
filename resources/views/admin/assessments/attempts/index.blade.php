@@ -43,7 +43,7 @@
                                 <option value="{{ $class->id }}" @selected($selectedClassId == $class->id)>{{ $class->name }}</option>
                             @endforeach
                         </select>
-                        <select class="search-input" name="subject_id" id="subject_id">
+                        <select class="search-input" name="subject_id" id="subject_id" data-subjects-url="{{ route('admin.subjects.by-class') }}" data-selected-subject="{{ $selectedSubjectId }}">
                             <option value="" @selected(!$selectedSubjectId)>All subjects</option>
                             @foreach ($subjects as $subject)
                                 <option value="{{ $subject->id }}" @selected($selectedSubjectId == $subject->id)>{{ $subject->name }}</option>
@@ -133,6 +133,7 @@
         const classSelect = document.getElementById('class_id');
         const topicSelect = document.getElementById('topic_id');
         if (subjectSelect && topicSelect) {
+            const defaultSubjectOptions = subjectSelect.innerHTML;
             const loadTopics = async (selectedTopicId) => {
                 const subjectId = subjectSelect.value;
                 const classId = classSelect ? classSelect.value : '';
@@ -167,13 +168,53 @@
                 }
             };
 
+            const loadSubjects = async (selectedSubjectId) => {
+                if (!classSelect) {
+                    return;
+                }
+
+                const classId = classSelect.value;
+                if (!classId) {
+                    subjectSelect.innerHTML = defaultSubjectOptions;
+                    if (selectedSubjectId) {
+                        subjectSelect.value = selectedSubjectId;
+                    }
+                    await loadTopics(topicSelect.dataset.selectedTopic || null);
+                    return;
+                }
+
+                subjectSelect.innerHTML = '<option value="">Loading subjects...</option>';
+                try {
+                    const url = new URL(subjectSelect.dataset.subjectsUrl, window.location.origin);
+                    url.searchParams.set('class_id', classId);
+                    const response = await fetch(url.toString(), {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                        },
+                        credentials: 'same-origin',
+                    });
+                    const data = response.ok ? await response.json() : [];
+                    let options = '<option value="">All subjects</option>';
+                    data.forEach((subject) => {
+                        const selected = selectedSubjectId && String(subject.id) === String(selectedSubjectId) ? 'selected' : '';
+                        options += `<option value="${subject.id}" ${selected}>${subject.name}</option>`;
+                    });
+                    subjectSelect.innerHTML = options;
+                    await loadTopics(topicSelect.dataset.selectedTopic || null);
+                } catch (error) {
+                    subjectSelect.innerHTML = defaultSubjectOptions;
+                    await loadTopics(topicSelect.dataset.selectedTopic || null);
+                }
+            };
+
             subjectSelect.addEventListener('change', () => loadTopics(null));
             if (classSelect) {
-                classSelect.addEventListener('change', () => loadTopics(topicSelect.dataset.selectedTopic || null));
+                classSelect.addEventListener('change', () => loadSubjects(null));
             }
 
-            const initialSelected = topicSelect.dataset.selectedTopic || null;
-            loadTopics(initialSelected);
+            const initialSubject = subjectSelect.dataset.selectedSubject || null;
+            loadSubjects(initialSubject);
         }
     </script>
 @endpush

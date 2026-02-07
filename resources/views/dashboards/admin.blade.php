@@ -10,6 +10,8 @@
     $hotspotLabel = strtolower((string) ($status['hotspot'] ?? ''));
     $hotspotOn = str_starts_with($hotspotLabel, 'on');
     $stats = $stats ?? [];
+    $sections = $sections ?? collect();
+    $sectionAccents = ['#4a7bd1', '#56c1a7', '#f2b84b', '#5b8de3', '#f08b5a', '#e56b6f'];
 @endphp
 
 @section('main')
@@ -292,6 +294,30 @@
                             <span>{{ $stats['exams'] ?? 0 }}</span>
                         </div>
                     </a>
+                </section>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header">
+                <h4>Sections Overview</h4>
+                <span class="badge gold">Sections</span>
+            </div>
+            <div class="panel-body">
+                <section class="quick-tabs" style="padding:0;">
+                    @forelse ($sections as $section)
+                        <a class="tab" style="--accent: {{ $sectionAccents[$loop->index % count($sectionAccents)] }}; --d: {{ 0.05 + ($loop->index * 0.05) }}s;" href="{{ route('admin.classes.index', ['section_id' => $section->id]) }}">
+                            <div class="tab-icon">
+                                <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+                            </div>
+                            <div>
+                                <p>{{ $section->name }}</p>
+                                <span>{{ $section->classes_count }} classes · {{ $section->subjects_count }} subjects</span>
+                            </div>
+                        </a>
+                    @empty
+                        <p class="text-muted">No sections configured yet.</p>
+                    @endforelse
                 </section>
             </div>
         </section>

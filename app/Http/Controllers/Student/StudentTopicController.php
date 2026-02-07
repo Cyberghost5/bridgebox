@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\SchoolClass;
 use App\Models\Subject;
 use App\Models\Topic;
 use Illuminate\Http\JsonResponse;
@@ -15,6 +16,7 @@ class StudentTopicController extends Controller
     {
         $student = $request->user();
         $classId = $student?->school_class_id;
+        $sectionId = $classId ? SchoolClass::whereKey($classId)->value('section_id') : null;
         $search = $request->string('q')->trim()->toString();
         $subjectId = $request->integer('subject_id');
 
@@ -23,8 +25,19 @@ class StudentTopicController extends Controller
                 ->where('school_class_id', $classId)
                 ->select('subject_id')
                 ->distinct())
+            ->when($sectionId, fn ($query) => $query->where('section_id', $sectionId))
             ->orderBy('name')
             ->get();
+
+        if ($subjectId && $sectionId) {
+            $subjectMatches = Subject::query()
+                ->whereKey($subjectId)
+                ->where('section_id', $sectionId)
+                ->exists();
+            if (!$subjectMatches) {
+                $subjectId = null;
+            }
+        }
 
         $topics = Topic::query()
             ->with(['subject', 'schoolClass'])
@@ -57,6 +70,17 @@ class StudentTopicController extends Controller
 
         if (!$subjectId || !$classId) {
             return response()->json([]);
+        }
+
+        $sectionId = SchoolClass::whereKey($classId)->value('section_id');
+        if ($sectionId) {
+            $subjectMatches = Subject::query()
+                ->whereKey($subjectId)
+                ->where('section_id', $sectionId)
+                ->exists();
+            if (!$subjectMatches) {
+                return response()->json([]);
+            }
         }
 
         $topics = Topic::query()

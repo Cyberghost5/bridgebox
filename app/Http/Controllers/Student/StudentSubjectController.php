@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\SchoolClass;
 use App\Models\Subject;
 use App\Models\Topic;
 use Illuminate\Http\Request;
@@ -14,6 +15,7 @@ class StudentSubjectController extends Controller
     {
         $student = $request->user();
         $classId = $student?->school_class_id;
+        $sectionId = $classId ? SchoolClass::whereKey($classId)->value('section_id') : null;
         $search = $request->string('q')->trim()->toString();
 
         $subjectIds = Topic::query()
@@ -26,6 +28,7 @@ class StudentSubjectController extends Controller
                 $query->where('school_class_id', $classId);
             }])
             ->whereIn('id', $subjectIds)
+            ->when($sectionId, fn ($query) => $query->where('section_id', $sectionId))
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery->where('name', 'like', "%{$search}%")

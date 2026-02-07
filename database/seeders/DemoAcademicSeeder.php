@@ -22,6 +22,10 @@ class DemoAcademicSeeder extends Seeder
     public function run(): void
     {
         $classes = [
+            ['name' => 'Creche A', 'slug' => 'creche-a', 'description' => 'Creche class A'],
+            ['name' => 'Creche B', 'slug' => 'creche-b', 'description' => 'Creche class B'],
+            ['name' => 'KG 1', 'slug' => 'kg-1', 'description' => 'Kindergarten class 1'],
+            ['name' => 'KG 2', 'slug' => 'kg-2', 'description' => 'Kindergarten class 2'],
             ['name' => 'JSS 1', 'slug' => 'jss-1', 'description' => 'Junior Secondary School 1'],
             ['name' => 'JSS 2', 'slug' => 'jss-2', 'description' => 'Junior Secondary School 2'],
             ['name' => 'SSS 1', 'slug' => 'sss-1', 'description' => 'Senior Secondary School 1'],
@@ -150,9 +154,27 @@ class DemoAcademicSeeder extends Seeder
             );
         });
 
-        $primaryClass = $createdClasses->first();
+        $firstNames = [
+            'Amina', 'Chinedu', 'Zainab', 'David', 'Hauwa', 'Ibrahim', 'Grace', 'Samuel', 'Kemi', 'Tunde',
+            'Ngozi', 'Musa', 'Fatima', 'Daniel', 'Adaeze', 'Joseph', 'Maryam', 'Peter', 'Yusuf', 'Esther',
+            'Ifeanyi', 'Ruth', 'Sulaiman', 'Christiana', 'Victor', 'Bola', 'Halima', 'Michael', 'Aisha', 'Emeka',
+        ];
+        $lastNames = [
+            'Okoro', 'Bello', 'Adebayo', 'Okeke', 'Yusuf', 'Ibrahim', 'Lawal', 'Olawale', 'Eze', 'Nwosu',
+            'Abdul', 'Ishola', 'Nwachukwu', 'Garba', 'Ogunleye', 'Umeh', 'Adeyemi', 'Onyeka', 'Sani', 'Balogun',
+        ];
+        $namePool = [];
+        foreach ($firstNames as $first) {
+            foreach ($lastNames as $last) {
+                $namePool[] = "{$first} {$last}";
+            }
+        }
+        $nameIndex = 0;
+        $emailCounts = [];
+
+        $primaryClass = $createdClasses->firstWhere('slug', 'jss-1') ?? $createdClasses->first();
         if ($primaryClass) {
-            $teacher = User::where('email', 'teacher@bridgebox.local')->first();
+            $teacher = User::where('email', 'chinedu.okoro@bridgebox.edu')->first();
             if ($teacher) {
                 $teacher->update(['school_class_id' => $primaryClass->id]);
             }
@@ -160,11 +182,18 @@ class DemoAcademicSeeder extends Seeder
 
         foreach ($createdClasses as $classIndex => $class) {
             for ($i = 1; $i <= 8; $i++) {
-                $email = sprintf('student-%s-%02d@bridgebox.local', $class->slug, $i);
+                $name = $namePool[$nameIndex % count($namePool)];
+                $nameIndex++;
+                $emailLocal = Str::slug($name, '.');
+                $count = ($emailCounts[$emailLocal] ?? 0) + 1;
+                $emailCounts[$emailLocal] = $count;
+                $email = $count === 1
+                    ? "{$emailLocal}@bridgebox.edu"
+                    : "{$emailLocal}{$count}@bridgebox.edu";
                 $student = User::updateOrCreate(
                     ['email' => $email],
                     [
-                        'name' => sprintf('%s Student %02d', $class->name, $i),
+                        'name' => $name,
                         'role' => User::ROLE_STUDENT,
                         'school_class_id' => $class->id,
                         'password' => Hash::make('BridgeBox@123'),
