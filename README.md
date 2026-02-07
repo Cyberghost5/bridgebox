@@ -44,9 +44,9 @@ This README is the shared foundation for our work. If you are new to the project
 
 Dummy login details (seeded):
 
-Admin: admin@bridgebox.local / BridgeBox@123
-Teacher: teacher@bridgebox.local / BridgeBox@123
-Student: student@bridgebox.local / BridgeBox@123
+- Admin: admin@bridgebox.local / BridgeBox@123
+- Teacher: teacher@bridgebox.local / BridgeBox@123
+- Student: student@bridgebox.local / BridgeBox@123
 
 ## Developer Quick Start
 

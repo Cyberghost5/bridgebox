@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>BridgeBox Installer</title>
+    <link rel="icon" type="image/png" href="{{ asset('assets/images/favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('assets/images/favicon.png') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
+</head>
+<body class="auth-body installer-body" data-screen="splash">
+    <div class="auth-shell installer-shell">
+        <section class="screen splash" id="splash" aria-label="BridgeBox loading screen">
+            <div class="logo-stack" aria-hidden="true">
+                <img class="brand-logo" src="{{ asset('assets/images/bridgebox.png') }}" alt="BridgeBox logo">
+            </div>
+        </section>
+
+        <section class="screen role" id="role" aria-label="Installer">
+            <div class="login-screen">
+                <div class="login-panel">
+                    <div class="login-header">
+                        <span class="role-pill">Installer</span>
+                        <h1>BridgeBox Setup</h1>
+                        <p class="subtext">This runs once to create the admin account and seed default class sections.</p>
+                    </div>
+
+                    @if ($errors->any())
+                        <div class="alert" role="alert">
+                            {{ $errors->first() }}
+                        </div>
+                    @endif
+
+                    <form class="login-form" action="{{ route('install.store') }}" method="post">
+                        @csrf
+                        <div class="field">
+                            <label for="name">Admin name</label>
+                            <input id="name" name="name" type="text" placeholder="Full name" value="{{ old('name') }}" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="email">Admin email</label>
+                            <input id="email" name="email" type="email" placeholder="admin@school.edu" value="{{ old('email') }}" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="password">Password</label>
+                            <input id="password" name="password" type="password" autocomplete="new-password" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="password_confirmation">Confirm password</label>
+                            <input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password" required>
+                        </div>
+
+                        <div class="field">
+                            <label>Select class sections to create</label>
+                            <div class="checkbox-grid">
+                                @foreach ($sections as $section)
+                                    @php($checked = in_array($section['slug'], old('sections', array_column($sections, 'slug')), true))
+                                    <label class="checkbox">
+                                        <input type="checkbox" name="sections[]" value="{{ $section['slug'] }}" {{ $checked ? 'checked' : '' }}>
+                                        <span>{{ $section['name'] }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <button class="btn primary" type="submit">Finish Installation</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="{{ asset('assets/js/landing.js') }}"></script>
+</body>
+</html>

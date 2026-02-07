@@ -15,6 +15,7 @@ class SectionsSeeder extends Seeder
             ['name' => 'Primary', 'slug' => 'primary', 'description' => 'Primary section'],
             ['name' => 'Junior Secondary', 'slug' => 'junior-secondary', 'description' => 'Junior secondary section'],
             ['name' => 'Senior Secondary', 'slug' => 'senior-secondary', 'description' => 'Senior secondary section'],
+            ['name' => 'University', 'slug' => 'university', 'description' => 'University section'],
         ];
 
         foreach ($sections as $section) {

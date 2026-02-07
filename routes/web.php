@@ -39,6 +39,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'landing')->name('landing');
 
+Route::get('/install', [\App\Http\Controllers\InstallController::class, 'show'])->name('install.show');
+Route::post('/install', [\App\Http\Controllers\InstallController::class, 'store'])->name('install.store');
+
 Route::get('/login/{role}', [AuthController::class, 'showLogin'])
     ->whereIn('role', ['admin', 'teacher', 'student'])
     ->name('login');
