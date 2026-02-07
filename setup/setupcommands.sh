@@ -25,6 +25,16 @@ DB_CONNECTION=sqlite
 DB_DATABASE=/var/www/bridgebox/database/database.sqlite
 
 cd /var/www/bridgebox
+
+# Install composer if not present
+if ! command -v composer >/dev/null 2>&1; then
+    curl -sS https://getcomposer.org/installer | php
+    sudo mv composer.phar /usr/local/bin/composer
+fi
+
+# Run composer install
+composer install --no-dev --optimize-autoloader
+
 php artisan key:generate
 php artisan config:cache
 php artisan route:cache
