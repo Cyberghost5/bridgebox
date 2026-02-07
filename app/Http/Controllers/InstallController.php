@@ -113,4 +113,4 @@ class InstallController extends Controller
     {
         return storage_path('app/installed.lock');
     }
-}
+} 
