@@ -4,66 +4,141 @@
   <img src="docs/bridgebox.jpeg" alt="BridgeBox device" width="520">
 </p>
 
-**BridgeBox** is Zee Tech Foundation’s commitment to solving one of the most persistent barriers in education across Northern Nigeria: limited access to digital learning resources. While technology is transforming classrooms globally, thousands of schools in rural Nigeria still operate in isolation, disconnected from the digital ecosystem.
+BridgeBox is an offline-first learning hub designed for schools with limited connectivity. It provides local access to lessons, assignments, quizzes, and exams, with role-based dashboards for admins, teachers, and students.
 
-BridgeBox was designed as an innovation that bridges this gap — literally serving as a **digital bridge** between disconnected learners and modern educational opportunities. This document is prepared to help our team fully understand the problem, the solution, our strategy, and the broader impact we intend to create. Every member of the team is encouraged to study it carefully, as it forms the foundation of our shared vision for the **i-FAIR innovation journey** and beyond.
+## Highlights
 
-## What We Are After
+- Offline-first UX with local caching
+- Role-based dashboards (Admin, Teacher, Student)
+- Content management for classes, subjects, topics, lessons, assessments, and assignments
+- CSV bulk upload for students
+- Export tools for assessments and assignments
 
-- **Access:** Deliver reliable, offline-first digital learning resources to rural and underserved schools.
-- **Equity:** Reduce the educational divide between connected and disconnected communities.
-- **Scalability:** Build a repeatable model that can expand across Northern Nigeria and beyond.
-- **Impact:** Improve learning outcomes and open pathways to modern educational opportunities.
+## Requirements
 
-## The Problem
+- PHP 8.2+ (8.3 recommended)
+- Composer
+- A database (MySQL/MariaDB or SQLite)
+- Node.js 18+ (optional, only if rebuilding front-end assets)
 
-- Rural schools often lack stable internet, reliable power, and up-to-date learning materials.
-- This creates a persistent gap between students in connected urban areas and those in remote communities.
+## Installation
 
-## The BridgeBox Solution
-
-- A compact, durable device that brings curated educational resources directly to schools.
-- Designed to function in low-connectivity environments and serve as a local learning hub.
-- Built to be easy to deploy, maintain, and scale.
-
-## Strategy
-
-- **Local-first deployment:** Prioritize regions with the greatest access gaps.
-- **Community partnerships:** Work with educators, local leaders, and institutions.
-- **Sustainable operations:** Ensure long-term viability through training and support.
-
-## Intended Impact
-
-- More students gain access to quality, relevant digital content.
-- Teachers receive tools to enhance instruction and engagement.
-- Communities gain pathways to modern knowledge and opportunity.
-
-## Team Note
-
-This README is the shared foundation for our work. If you are new to the project, start here and align on the mission before diving into implementation details.
-
-Dummy login details (seeded):
-
-- Admin: admin@bridgebox.local / BridgeBox@123
-- Teacher: teacher@bridgebox.local / BridgeBox@123
-- Student: student@bridgebox.local / BridgeBox@123
-
-## Developer Quick Start
-
-A few developer-focused notes to help iterate quickly:
-
-- Use the setup script dry-run for safe validation:
+1. Clone the repository
 
 ```bash
-sudo bash setup/onetimesetup.sh --dry-run
+git clone <your-repo-url>
+cd bridgebox
 ```
 
-- To save hotspot defaults from the admin UI (saved to server storage): Admin Dashboard -> Admin Controls -> Hotspot Settings. This stores `storage/app/hotspot.json` on the server.
+2. Install dependencies
 
-- Offline alert styles are provided locally at `public/assets/css/bootstrap-alerts.css` so the UI works without CDN access.
+```bash
+composer install
+```
 
-- CI: A basic GitHub Actions workflow has been added at `.github/workflows/ci.yml` to run `composer install` and `phpunit` if tests exist.
+3. Create your environment file
 
-If you'd like I can add a backup artisan command, implement applying hotspot settings via the admin UI (requires careful sudo handling), or wire up frontend fetching of saved hotspot defaults.
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-- php artisan db:seed --class=SectionsSeeder
+4. Configure the database in `.env`
+
+Example for MySQL:
+
+```ini
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=bridgebox
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+Example for SQLite:
+
+```ini
+DB_CONNECTION=sqlite
+DB_DATABASE=/absolute/path/to/bridgebox/database/database.sqlite
+```
+
+5. Run migrations
+
+```bash
+php artisan migrate
+```
+
+6. (Optional) Build front-end assets
+
+```bash
+npm install
+npm run build
+```
+
+## First-Time Setup (Installer)
+
+On first web request, BridgeBox redirects to `/install`.
+
+At `/install`, you can:
+
+- Create the first admin account
+- Select which school sections to create
+- Optionally seed demo data
+
+After completing the installer, a lock file is created at `storage/app/installed.lock` to prevent reruns. To re-run the installer, delete that file.
+
+## Seeding (Optional)
+
+If you prefer manual seeding without the installer:
+
+```bash
+php artisan db:seed --class=SectionsSeeder
+```
+
+To seed demo data:
+
+```bash
+php artisan db:seed --class=DemoAcademicSeeder
+```
+
+## Running the App
+
+```bash
+php artisan serve
+```
+
+Then visit:
+
+- Landing page: `http://localhost:8000/`
+- Installer: `http://localhost:8000/install` (only if not installed)
+
+## Offline Support
+
+BridgeBox uses a service worker (`public/sw.js`) to cache core pages and assets for offline use. If you add new static content (for example, CSV samples or offline resources), update the precache list in `public/sw.js` and bump the cache version.
+
+## CSV Bulk Upload (Students)
+
+Admin users can bulk upload students using a CSV file from:
+
+`Admin Dashboard -> Students -> Bulk Upload`
+
+A sample CSV is available at:
+
+`public/assets/samples/students.csv`
+
+## Testing
+
+```bash
+php artisan test
+```
+
+## Troubleshooting
+
+- If the installer redirects unexpectedly, ensure `storage/app/installed.lock` is removed.
+- If migrations fail, confirm your `.env` database settings.
+- If assets look outdated, rebuild with `npm run build`.
+
+## License
+
+Add your project license here.

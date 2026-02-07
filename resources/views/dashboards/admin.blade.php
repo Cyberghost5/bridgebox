@@ -126,7 +126,7 @@
                 <span class="badge gold">Actions</span>
             </div>
             <div class="panel-body">
-                <div class="item">
+                <!-- <div class="item">
                     <div class="item-info">
                         <p>Server</p>
                         <span>nginx + php-fpm services</span>
@@ -138,7 +138,7 @@
                             <span class="toggle-track"></span>
                         </label>
                     </form>
-                </div>
+                </div> -->
                 <div class="item">
                     <div class="item-info">
                         <p>Hotspot Control</p>
