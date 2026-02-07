@@ -12,6 +12,7 @@
             </div>
             <div class="actions">
                 <a class="btn primary" href="{{ route('admin.users.students.create') }}">Add Student</a>
+                <a class="btn ghost" href="{{ route('admin.users.students.bulk') }}">Bulk Upload</a>
                 <a class="btn ghost" href="{{ route('dashboard.admin') }}">Back to Dashboard</a>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf

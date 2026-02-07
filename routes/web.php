@@ -104,6 +104,8 @@ Route::prefix('dashboard/admin/users')
         Route::get('/teachers/{user}/created', [AdminUserController::class, 'createdTeacher'])->name('teachers.created');
         Route::get('/students', [AdminUserController::class, 'students'])->name('students.index');
         Route::get('/students/create', [AdminUserController::class, 'createStudent'])->name('students.create');
+        Route::get('/students/bulk', [AdminUserController::class, 'bulkStudents'])->name('students.bulk');
+        Route::post('/students/bulk', [AdminUserController::class, 'storeBulkStudents'])->name('students.bulk.store');
         Route::get('/students/{user}', [AdminUserController::class, 'showStudent'])->name('students.show');
         Route::post('/students', [AdminUserController::class, 'storeStudent'])->name('students.store');
         Route::get('/students/{user}/edit', [AdminUserController::class, 'editStudent'])->name('students.edit');

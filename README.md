@@ -65,3 +65,5 @@ sudo bash setup/onetimesetup.sh --dry-run
 - CI: A basic GitHub Actions workflow has been added at `.github/workflows/ci.yml` to run `composer install` and `phpunit` if tests exist.
 
 If you'd like I can add a backup artisan command, implement applying hotspot settings via the admin UI (requires careful sudo handling), or wire up frontend fetching of saved hotspot defaults.
+
+- php artisan db:seed --class=SectionsSeeder
