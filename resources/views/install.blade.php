@@ -41,7 +41,7 @@
 
                         <div class="field">
                             <label for="email">Admin email</label>
-                            <input id="email" name="email" type="email" placeholder="admin@school.edu" value="{{ old('email') }}" required>
+                            <input id="email" name="email" type="email" placeholder="admin@bridgebox.local" value="{{ old('email') }}" required>
                         </div>
 
                         <div class="field">
@@ -60,11 +60,19 @@
                                 @foreach ($sections as $section)
                                     @php($checked = in_array($section['slug'], old('sections', array_column($sections, 'slug')), true))
                                     <label class="checkbox">
-                                        <input type="checkbox" name="sections[]" value="{{ $section['slug'] }}" {{ $checked ? 'checked' : '' }}>
+                                        <input type="checkbox" name="sections[]" value="{{ $section['slug'] }}">
                                         <span>{{ $section['name'] }}</span>
                                     </label>
                                 @endforeach
                             </div>
+                        </div>
+
+                        <div class="field">
+                            <label>Optional</label>
+                            <label class="checkbox">
+                                <input type="checkbox" name="demo_mode" value="1" {{ old('demo_mode') ? 'checked' : '' }}>
+                                <span>Seed demo data</span>
+                            </label>
                         </div>
 
                         <button class="btn primary" type="submit">Finish Installation</button>

@@ -41,6 +41,7 @@ class InstallController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'sections' => ['required', 'array', 'min:1'],
             'sections.*' => ['string'],
+            'demo_mode' => ['nullable', 'boolean'],
         ]);
 
         $admin = User::create([
@@ -52,6 +53,10 @@ class InstallController extends Controller
         ]);
 
         $this->seedSelectedSections($data['sections']);
+
+        if (!empty($data['demo_mode'])) {
+            app(\Database\Seeders\DemoAcademicSeeder::class)->run();
+        }
         $this->writeLock($admin->email);
 
         return redirect()->route('login', ['role' => 'admin']);
