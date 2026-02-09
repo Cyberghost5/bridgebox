@@ -160,7 +160,7 @@ DHCP assigns IPs to users automatically. All traffic stays local.
 
 ## Offline Content Policy  
 
-All course materials must be stored locally. Do not rely on:
+All course materials are be stored locally. It do not rely on:
 
 - External CDNs  
 - YouTube or Vimeo embeds  
@@ -168,7 +168,7 @@ All course materials must be stored locally. Do not rely on:
 - External login providers  
 - Email-based password reset  
 
-All CSS, JS, fonts, PDFs, and images must exist on the Pi.
+All CSS, JS, fonts, PDFs, and images exist on the Pi.
 
 ---
 
@@ -204,8 +204,8 @@ All CSS, JS, fonts, PDFs, and images must exist on the Pi.
 ## Maintenance  
 
 ### To update content  
-- Connect USB drive or temporary internet  
-- Copy new files to content folder  
+- Connect to temporary internet  
+- Copy new files to content folder from this GitHub repo  
 - Update database if needed  
 
 ### To update application  
