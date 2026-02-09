@@ -60,7 +60,7 @@ No internet is required after setup.
 ## Project Folder Structure  
 
 **Main project path**  
-/var/www/bridgebox
+``` /var/www/bridgebox ```
 
 
 **Important folders**
