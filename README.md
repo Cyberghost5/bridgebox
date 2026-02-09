@@ -81,12 +81,14 @@ Nginx serves these files directly for better performance.
 ## Laravel Configuration  
 
 **.env important values**  
+```
 APP_ENV=production  
 APP_DEBUG=false  
 APP_URL=http://10.42.0.1 
 
 DB_CONNECTION=sqlite  
 DB_DATABASE=database/database.sqlite 
+```
 
 
 **Run these for optimization**
@@ -103,7 +105,7 @@ php artisan view:cache
 ## Web Server Configuration  
 
 Nginx root points to:  
-/var/www/bridgebox/public
+``` /var/www/bridgebox/public ```
 
 
 Static files like pdf, jpg, png, css, js are served directly by Nginx.  
@@ -136,10 +138,11 @@ SQLite can slow down if many users write at the same time. Heavy logging or freq
 ---
 
 ## Hotspot Network  
-
+```
 Wi-Fi name: Bridgbox  
 Password: 12345678  
 IP of the Pi: 10.42.0.1  
+```
 
 
 DHCP assigns IPs to users automatically. All traffic stays local.
