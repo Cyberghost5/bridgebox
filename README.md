@@ -12,8 +12,8 @@ The system serves PDFs and images locally and supports many users on the same lo
 ---
 
 ## Core Idea  
-You turned a Raspberry Pi into a self-contained learning server.  
-It works like a Laragon setup, but on real Linux hardware.  
+We turned a Raspberry Pi into a self-contained learning server.  
+It works like a Laragon/XAMPP setup, but on real Linux hardware.  
 The Pi creates its own Wi-Fi network. Any phone or laptop connects and opens the LMS through a browser.
 
 ---
@@ -26,7 +26,7 @@ The Pi creates its own Wi-Fi network. Any phone or laptop connects and opens the
 - microSD for storage  
 
 ### Operating System  
-- Raspberry Pi OS Lite  
+- Raspberry Pi OS  
 
 ### Server Stack  
 - Nginx web server  
@@ -73,14 +73,14 @@ No internet is required after setup.
 | database/database.sqlite | SQLite database file |
 
 ### Course Content Storage  
-Store all PDFs and images on disk inside the project or a mounted content folder.  
+Store all PDFs and images on disk inside the project.  
 Nginx serves these files directly for better performance.
 
 ---
 
 ## Laravel Configuration  
 
-**.env important values**
+**.env important values**  
 APP_ENV=production  
 APP_DEBUG=false  
 APP_URL=http://10.42.0.1 
@@ -90,10 +90,12 @@ DB_DATABASE=database/database.sqlite
 
 
 **Run these for optimization**
+```
 php artisan key:generate  
 php artisan config:cache  
 php artisan route:cache  
 php artisan view:cache  
+```
 
 
 ---
