@@ -21,9 +21,9 @@ The Pi creates its own Wi-Fi network. Any phone or laptop connects and opens the
 ## System Architecture  
 
 ### Hardware  
-- Raspberry Pi 4 or Pi 5  
-- Recommended 8GB RAM  
-- SSD preferred over microSD for storage  
+- Raspberry Pi 5  
+- 4GB RAM  
+- microSD for storage  
 
 ### Operating System  
 - Raspberry Pi OS Lite  
@@ -37,7 +37,7 @@ The Pi creates its own Wi-Fi network. Any phone or laptop connects and opens the
 ### Network Mode  
 - Pi acts as a Wi-Fi hotspot  
 - Users connect directly to the Pi  
-- Access address is `http://192.168.4.1`  
+- Access address is `http://10.42.0.1`  
 
 ---
 
@@ -48,7 +48,7 @@ The Pi creates its own Wi-Fi network. Any phone or laptop connects and opens the
 3. Nginx and PHP-FPM start automatically  
 4. The Pi broadcasts a Wi-Fi network  
 5. A user connects to the Wi-Fi  
-6. The user opens a browser and enters `192.168.4.1`  
+6. The user opens a browser and enters `10.42.0.1`  
 7. Nginx serves the Laravel app  
 8. Laravel reads and writes to the SQLite file  
 9. Course PDFs and images load from local storage  
@@ -81,26 +81,26 @@ Nginx serves these files directly for better performance.
 ## Laravel Configuration  
 
 **.env important values**
-APP_ENV=production
-APP_DEBUG=false
-APP_URL=http://192.168.4.1
+APP_ENV=production  
+APP_DEBUG=false  
+APP_URL=http://10.42.0.1 
 
-DB_CONNECTION=sqlite
-DB_DATABASE=/var/www/bridgebox/database/database.sqlite
+DB_CONNECTION=sqlite  
+DB_DATABASE=database/database.sqlite 
 
 
 **Run these for optimization**
-php artisan key:generate
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+php artisan key:generate  
+php artisan config:cache  
+php artisan route:cache  
+php artisan view:cache  
 
 
 ---
 
 ## Web Server Configuration  
 
-Nginx root points to:
+Nginx root points to:  
 /var/www/bridgebox/public
 
 
@@ -135,9 +135,9 @@ SQLite can slow down if many users write at the same time. Heavy logging or freq
 
 ## Hotspot Network  
 
-Wi-Fi name example:  
-Password example:  
-IP of the Pi:  
+Wi-Fi name: Bridgbox  
+Password: 12345678  
+IP of the Pi: 10.42.0.1  
 
 
 DHCP assigns IPs to users automatically. All traffic stays local.
