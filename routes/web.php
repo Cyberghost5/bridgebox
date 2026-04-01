@@ -24,6 +24,7 @@ use App\Http\Controllers\Teacher\TeacherExportController;
 use App\Http\Controllers\Teacher\TeacherStudentController;
 use App\Http\Controllers\Teacher\TeacherSubjectController;
 use App\Http\Controllers\Teacher\TeacherTopicController;
+use App\Http\Controllers\Teacher\TeacherTopicLessonController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Student\AssignmentController as StudentAssignmentController;
 use App\Http\Controllers\Student\StudentDashboardController;
@@ -32,8 +33,10 @@ use App\Http\Controllers\Student\StudentLessonController;
 use App\Http\Controllers\Student\StudentProgressController;
 use App\Http\Controllers\Student\StudentSubjectController;
 use App\Http\Controllers\Student\StudentTopicController;
+use App\Http\Controllers\Student\StudentProfileController;
 use App\Http\Controllers\Admin\AdminAssignmentController;
 use App\Http\Controllers\Admin\AdminAssignmentSubmissionController;
+use App\Http\Controllers\LocaleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -41,6 +44,8 @@ Route::view('/', 'landing')->name('landing');
 
 Route::get('/install', [\App\Http\Controllers\InstallController::class, 'show'])->name('install.show');
 Route::post('/install', [\App\Http\Controllers\InstallController::class, 'store'])->name('install.store');
+Route::post('/install/generic', [\App\Http\Controllers\InstallController::class, 'storeGeneric'])->name('install.generic.store');
+Route::get('/install/generic', [\App\Http\Controllers\InstallController::class, 'showGeneric'])->name('install.generic.show');
 
 Route::get('/login/{role}', [AuthController::class, 'showLogin'])
     ->whereIn('role', ['admin', 'teacher', 'student'])
@@ -51,6 +56,7 @@ Route::post('/login/{role}', [AuthController::class, 'login'])
     ->name('login.submit');
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::post('/locale', [LocaleController::class, 'update'])->name('locale.update')->middleware('auth');
 Route::post('/impersonate/stop', [AdminUserController::class, 'stopImpersonation'])->name('impersonate.stop');
 
 Route::get('/dashboard/admin', [AdminDashboardController::class, 'index'])
@@ -174,6 +180,8 @@ Route::prefix('dashboard/admin/topics')
 
         Route::get('/{topic}/lessons', [AdminTopicLessonController::class, 'index'])->name('lessons.index');
         Route::get('/{topic}/lessons/create', [AdminTopicLessonController::class, 'create'])->name('lessons.create');
+        Route::get('/{topic}/lessons/{lesson}', [AdminTopicLessonController::class, 'show'])->name('lessons.show');
+        Route::get('/{topic}/lessons/{lesson}/file', [AdminTopicLessonController::class, 'file'])->name('lessons.file');
         Route::post('/{topic}/lessons', [AdminTopicLessonController::class, 'store'])->name('lessons.store');
         Route::get('/{topic}/lessons/{lesson}/download', [AdminTopicLessonController::class, 'download'])->name('lessons.download');
         Route::delete('/{topic}/lessons/{lesson}', [AdminTopicLessonController::class, 'destroy'])->name('lessons.delete');
@@ -262,6 +270,8 @@ Route::prefix('dashboard/student')
         Route::get('/lessons/{lesson}', [StudentLessonController::class, 'show'])->name('lessons.show');
         Route::get('/lessons/{lesson}/file', [StudentLessonController::class, 'file'])->name('lessons.file');
         Route::get('/progress', [StudentProgressController::class, 'index'])->name('progress.index');
+        Route::get('/profile', [StudentProfileController::class, 'show'])->name('profile.show');
+        Route::post('/profile', [StudentProfileController::class, 'update'])->name('profile.update');
     });
 
 Route::prefix('dashboard/student/quizzes')
@@ -345,6 +355,13 @@ Route::prefix('dashboard/teacher')
             Route::get('/{topic}/edit', [TeacherTopicController::class, 'edit'])->name('edit');
             Route::put('/{topic}', [TeacherTopicController::class, 'update'])->name('update');
             Route::delete('/{topic}', [TeacherTopicController::class, 'destroy'])->name('delete');
+
+            // Lesson actions for teachers
+            Route::get('/{topic}/lessons', [TeacherTopicLessonController::class, 'index'])->name('lessons.index');
+            Route::get('/{topic}/lessons/create', [TeacherTopicLessonController::class, 'create'])->name('lessons.create');
+            Route::post('/{topic}/lessons', [TeacherTopicLessonController::class, 'store'])->name('lessons.store');
+            Route::get('/{topic}/lessons/{lesson}/download', [TeacherTopicLessonController::class, 'download'])->name('lessons.download');
+            Route::delete('/{topic}/lessons/{lesson}', [TeacherTopicLessonController::class, 'destroy'])->name('lessons.delete');
         });
 
         Route::prefix('assignments')->name('assignments.')->group(function () {

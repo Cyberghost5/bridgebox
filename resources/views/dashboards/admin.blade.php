@@ -1,6 +1,6 @@
 ﻿@extends('admin.layout')
 
-@section('title', 'Admin Dashboard')
+@section('title', __('Admin Dashboard'))
 
 @php
     $status = $status ?? [];
@@ -18,17 +18,17 @@
     <main class="main" data-refresh-url="{{ route('dashboard.admin.status') }}" data-refresh-interval="1000" data-auto-refresh="on">
         <header class="topbar">
             <div class="greeting">
-                <p class="eyebrow">Admin Control Room</p>
-                <h1>Hello, {{ auth()->user()->name ?? 'Admin' }}.</h1>
-                <p class="subtext">Monitor core services and manage system controls.</p>
+                <p class="eyebrow">{{ __('Admin Control Room') }}</p>
+                <h1>{{ __('Hello,') }} {{ auth()->user()->name ?? __('Admin') }}.</h1>
+                <p class="subtext">{{ __('Monitor core services and manage system controls.') }}</p>
             </div>
             <div class="actions">
-                <a class="btn ghost" href="{{ route('admin.users.teachers.index') }}">Teachers</a>
-                <a class="btn ghost" href="{{ route('admin.users.students.index') }}">Students</a>
-                <a class="btn ghost" href="{{ route('admin.classes.index') }}">Classes</a>
+                <a class="btn ghost" href="{{ route('admin.users.teachers.index') }}">{{ __('Teachers') }}</a>
+                <a class="btn ghost" href="{{ route('admin.users.students.index') }}">{{ __('Students') }}</a>
+                <a class="btn ghost" href="{{ route('admin.classes.index') }}">{{ __('Classes') }}</a>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
-                    <button class="btn primary" type="submit">Logout</button>
+                    <button class="btn primary" type="submit">{{ __('Logout') }}</button>
                 </form>
             </div>
         </header>
@@ -51,7 +51,7 @@
                     <i class="fa-solid fa-server" aria-hidden="true"></i>
                 </div>
                 <div>
-                    <p>Server Status</p>
+                    <p>{{ __('Server Status') }}</p>
                     <span data-status="server">{{ $status['server'] ?? 'Unknown' }}</span>
                 </div>
             </div>
@@ -60,7 +60,7 @@
                     <i class="fa-solid fa-wifi" aria-hidden="true"></i>
                 </div>
                 <div>
-                    <p>Hotspot Status</p>
+                    <p>{{ __('Hotspot Status') }}</p>
                     <span data-status="hotspot">{{ $status['hotspot'] ?? 'Unknown' }}</span>
                 </div>
             </div>
@@ -69,7 +69,7 @@
                     <i class="fa-solid fa-network-wired" aria-hidden="true"></i>
                 </div>
                 <div>
-                    <p>Connected Devices</p>
+                    <p>{{ __('Connected Devices') }}</p>
                     <span data-status="devices">{{ $status['devices'] ?? 'Unknown' }}</span>
                 </div>
             </div>
@@ -78,7 +78,7 @@
                     <i class="fa-solid fa-heart-pulse" aria-hidden="true"></i>
                 </div>
                 <div>
-                    <p>App Health</p>
+                    <p>{{ __('App Health') }}</p>
                     <span data-status="app_health">{{ $status['app_health'] ?? 'Unknown' }}</span>
                 </div>
             </div>
@@ -87,7 +87,7 @@
                     <i class="fa-solid fa-hard-drive" aria-hidden="true"></i>
                 </div>
                 <div>
-                    <p>Storage</p>
+                    <p>{{ __('Storage') }}</p>
                     <span data-status="storage">{{ $status['storage'] ?? 'Unknown' }}</span>
                 </div>
             </div>
@@ -96,7 +96,7 @@
                     <i class="fa-solid fa-bolt" aria-hidden="true"></i>
                 </div>
                 <div>
-                    <p>Power Health</p>
+                    <p>{{ __('Power Health') }}</p>
                     <span data-status="power">{{ $status['power'] ?? 'Unknown' }}</span>
                 </div>
             </div>
@@ -105,7 +105,7 @@
                     <i class="fa-solid fa-clock" aria-hidden="true"></i>
                 </div>
                 <div>
-                    <p>Uptime</p>
+                    <p>{{ __('Uptime') }}</p>
                     <span data-status="uptime" data-uptime-seconds="{{ $status['uptime_seconds'] ?? '' }}">{{ $status['uptime'] ?? 'Unknown' }}</span>
                 </div>
             </div>
@@ -114,7 +114,7 @@
                     <i class="fa-solid fa-calendar-check" aria-hidden="true"></i>
                 </div>
                 <div>
-                    <p>Last Update</p>
+                    <p>{{ __('Last Update') }}</p>
                     <span data-status="last_update">{{ $status['last_update'] ?? 'Unknown' }}</span>
                 </div>
             </div>
@@ -122,8 +122,8 @@
 
         <section class="panel">
             <div class="panel-header">
-                <h4>Admin Controls</h4>
-                <span class="badge gold">Actions</span>
+                <h4>{{ __('Admin Controls') }}</h4>
+                <span class="badge gold">{{ __('Actions') }}</span>
             </div>
             <div class="panel-body">
                 <!-- <div class="item">
@@ -141,10 +141,10 @@
                 </div> -->
                 <div class="item">
                     <div class="item-info">
-                        <p>Hotspot Control</p>
-                        <span>Turn hotspot on/off</span>
+                        <p>{{ __('Hotspot Control') }}</p>
+                        <span>{{ __('Turn hotspot on/off') }}</span>
                     </div>
-                    <form class="toggle-form" data-admin-toggle data-action-on="{{ route('dashboard.admin.actions', ['action' => 'hotspot_on']) }}" data-action-off="{{ route('dashboard.admin.actions', ['action' => 'hotspot_off']) }}" data-confirm-on="Turn hotspot on?" data-confirm-off="Turn hotspot off?" method="post">
+                    <form class="toggle-form" data-admin-toggle data-action-on="{{ route('dashboard.admin.actions', ['action' => 'hotspot_on']) }}" data-action-off="{{ route('dashboard.admin.actions', ['action' => 'hotspot_off']) }}" data-confirm-on="{{ __('Turn hotspot on?') }}" data-confirm-off="{{ __('Turn hotspot off?') }}" method="post">
                         @csrf
                         <label class="toggle">
                             <input type="checkbox" data-toggle-input data-toggle-target="hotspot" @checked($hotspotOn) @disabled($sudoBlocked)>
@@ -154,24 +154,24 @@
                 </div>
                 <div class="item">
                     <div class="item-info">
-                        <p>Power Actions</p>
-                        <span>Reboot or shutdown device</span>
+                        <p>{{ __('Power Actions') }}</p>
+                        <span>{{ __('Reboot or shutdown device') }}</span>
                     </div>
                     <div class="inline-actions">
-                        <form data-admin-action data-confirm="Reboot the device now?" action="{{ route('dashboard.admin.actions', ['action' => 'reboot']) }}" method="post">
+                        <form data-admin-action data-confirm="{{ __('Reboot the device now?') }}" action="{{ route('dashboard.admin.actions', ['action' => 'reboot']) }}" method="post">
                             @csrf
-                            <button class="btn primary" type="submit" @disabled($sudoBlocked)>Reboot</button>
+                            <button class="btn primary" type="submit" @disabled($sudoBlocked)>{{ __('Reboot') }}</button>
                         </form>
-                        <form data-admin-action data-confirm="Shutdown the device now?" action="{{ route('dashboard.admin.actions', ['action' => 'shutdown']) }}" method="post">
+                        <form data-admin-action data-confirm="{{ __('Shutdown the device now?') }}" action="{{ route('dashboard.admin.actions', ['action' => 'shutdown']) }}" method="post">
                             @csrf
-                            <button class="btn ghost" type="submit" @disabled($sudoBlocked)>Shutdown</button>
+                            <button class="btn ghost" type="submit" @disabled($sudoBlocked)>{{ __('Shutdown') }}</button>
                         </form>
                     </div>
                 </div>
                 <div class="item">
                     <div class="item-info">
-                        <p>Hotspot Settings</p>
-                        <span>Save SSID and password for hotspot use</span>
+                        <p>{{ __('Hotspot Settings') }}</p>
+                        <span>{{ __('Save SSID and password for hotspot use') }}</span>
                     </div>
                     @php
                         $hotspot_ssid = '';
@@ -193,14 +193,14 @@
                     <form action="{{ route('dashboard.admin.settings') }}" method="post">
                         @csrf
                         <div style="display:flex;gap:8px;align-items:center;">
-                            <input name="hotspot_ssid" value="{{ old('hotspot_ssid', $hotspot_ssid) }}" placeholder="SSID" style="padding:8px;border-radius:8px;border:1px solid #ccc;">
-                            <input name="hotspot_password" value="{{ old('hotspot_password', $hotspot_password) }}" placeholder="Password" style="padding:8px;border-radius:8px;border:1px solid #ccc;">
-                            <button class="btn primary" type="submit">Save</button>
+                            <input name="hotspot_ssid" value="{{ old('hotspot_ssid', $hotspot_ssid) }}" placeholder="{{ __('SSID') }}" style="padding:8px;border-radius:8px;border:1px solid #ccc;">
+                            <input name="hotspot_password" value="{{ old('hotspot_password', $hotspot_password) }}" placeholder="{{ __('Password') }}" style="padding:8px;border-radius:8px;border:1px solid #ccc;">
+                            <button class="btn primary" type="submit">{{ __('Save') }}</button>
                         </div>
                     </form>
-                    <form data-admin-action data-confirm="Apply hotspot settings to this device? This requires sudo and will modify network settings." action="{{ route('dashboard.admin.actions', ['action' => 'apply_hotspot_settings']) }}" method="post" style="margin-top:8px;">
+                    <form data-admin-action data-confirm="{{ __('Apply hotspot settings to this device? This requires sudo and will modify network settings.') }}" action="{{ route('dashboard.admin.actions', ['action' => 'apply_hotspot_settings']) }}" method="post" style="margin-top:8px;">
                         @csrf
-                        <button class="btn ghost" type="submit" @disabled($sudoBlocked)>Apply to device</button>
+                        <button class="btn ghost" type="submit" @disabled($sudoBlocked)>{{ __('Apply to device') }}</button>
                     </form>
                 </div>
             </div>
@@ -208,8 +208,8 @@
 
         <section class="panel">
             <div class="panel-header">
-                <h4>Academic Overview</h4>
-                <span class="badge blue">Counts</span>
+                <h4>{{ __('Academic Overview') }}</h4>
+                <span class="badge blue">{{ __('Counts') }}</span>
             </div>
             <div class="panel-body">
                 <section class="quick-tabs" style="padding:0;">
@@ -218,7 +218,7 @@
                             <i class="fa-solid fa-people-roof" aria-hidden="true"></i>
                         </div>
                         <div>
-                            <p>Classes</p>
+                            <p>{{ __('Classes') }}</p>
                             <span>{{ $stats['classes'] ?? 0 }}</span>
                         </div>
                     </a>
@@ -227,7 +227,7 @@
                             <i class="fa-solid fa-chalkboard-user" aria-hidden="true"></i>
                         </div>
                         <div>
-                            <p>Teachers</p>
+                            <p>{{ __('Teachers') }}</p>
                             <span>{{ $stats['teachers'] ?? 0 }}</span>
                         </div>
                     </a>
@@ -236,7 +236,7 @@
                             <i class="fa-solid fa-user-graduate" aria-hidden="true"></i>
                         </div>
                         <div>
-                            <p>Students</p>
+                            <p>{{ __('Students') }}</p>
                             <span>{{ $stats['students'] ?? 0 }}</span>
                         </div>
                     </a>
@@ -245,7 +245,7 @@
                             <i class="fa-solid fa-book" aria-hidden="true"></i>
                         </div>
                         <div>
-                            <p>Subjects</p>
+                            <p>{{ __('Subjects') }}</p>
                             <span>{{ $stats['subjects'] ?? 0 }}</span>
                         </div>
                     </a>
@@ -254,7 +254,7 @@
                             <i class="fa-solid fa-list-check" aria-hidden="true"></i>
                         </div>
                         <div>
-                            <p>Topics</p>
+                            <p>{{ __('Topics') }}</p>
                             <span>{{ $stats['topics'] ?? 0 }}</span>
                         </div>
                     </a>
@@ -263,7 +263,7 @@
                             <i class="fa-solid fa-book-open" aria-hidden="true"></i>
                         </div>
                         <div>
-                            <p>Lessons</p>
+                            <p>{{ __('Lessons') }}</p>
                             <span>{{ $stats['lessons'] ?? 0 }}</span>
                         </div>
                     </a>
@@ -272,7 +272,7 @@
                             <i class="fa-solid fa-file-lines" aria-hidden="true"></i>
                         </div>
                         <div>
-                            <p>Assignments</p>
+                            <p>{{ __('Assignments') }}</p>
                             <span>{{ $stats['assignments'] ?? 0 }}</span>
                         </div>
                     </a>
@@ -281,7 +281,7 @@
                             <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
                         </div>
                         <div>
-                            <p>Quizzes</p>
+                            <p>{{ __('Quizzes') }}</p>
                             <span>{{ $stats['quizzes'] ?? 0 }}</span>
                         </div>
                     </a>
@@ -290,7 +290,7 @@
                             <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
                         </div>
                         <div>
-                            <p>Exams</p>
+                            <p>{{ __('Exams') }}</p>
                             <span>{{ $stats['exams'] ?? 0 }}</span>
                         </div>
                     </a>
@@ -300,8 +300,8 @@
 
         <section class="panel">
             <div class="panel-header">
-                <h4>Sections Overview</h4>
-                <span class="badge gold">Sections</span>
+                <h4>{{ __('Sections Overview') }}</h4>
+                <span class="badge gold">{{ __('Sections') }}</span>
             </div>
             <div class="panel-body">
                 <section class="quick-tabs" style="padding:0;">
@@ -316,7 +316,7 @@
                             </div>
                         </a>
                     @empty
-                        <p class="text-muted">No sections configured yet.</p>
+                        <p class="text-muted">{{ __('No sections configured yet.') }}</p>
                     @endforelse
                 </section>
             </div>
