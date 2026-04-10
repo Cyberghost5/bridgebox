@@ -79,6 +79,7 @@
                                     <td>{{ $topic->created_at?->format('Y-m-d') ?? '-' }}</td>
                                     <td>
                                         <div class="table-actions">
+                                            <a class="btn ghost btn-small" href="{{ route('teacher.topics.lessons.index', $topic) }}">{{ __('Lessons') }}</a>
                                             <a class="btn ghost btn-small" href="{{ route('teacher.topics.edit', $topic) }}">{{ __('Edit') }}</a>
                                             <form method="post" action="{{ route('teacher.topics.delete', $topic) }}" data-confirm="{{ __('Delete this topic?') }}" style="display:inline-block;">
                                                 @csrf

@@ -51,7 +51,7 @@
                         </thead>
                         <tbody>
                             @forelse ($lessons as $index => $lesson)
-                                <tr>
+                                <tr data-row-href="{{ route('teacher.topics.lessons.show', [$topic, $lesson]) }}" style="cursor:pointer;">
                                     <td>{{ $lessons->firstItem() + $index }}</td>
                                     <td>{{ $lesson->title }}</td>
                                     <td>{{ $lesson->content ? Str::limit($lesson->content, 60) : '-' }}</td>
@@ -59,6 +59,7 @@
                                     <td>{{ $lesson->created_at?->format('Y-m-d') ?? '-' }}</td>
                                     <td>
                                         <div class="table-actions">
+                                            <a class="btn ghost btn-small" href="{{ route('teacher.topics.lessons.edit', [$topic, $lesson]) }}">{{ __('Edit') }}</a>
                                             @if ($lesson->file_path)
                                                 <a class="btn ghost btn-small" href="{{ route('teacher.topics.lessons.download', [$topic, $lesson]) }}">{{ __('Download') }}</a>
                                             @endif

@@ -7,6 +7,8 @@
     <link rel="icon" type="image/png" href="{{ asset('assets/images/favicon.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('assets/images/favicon.png') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendor/fontawesome/css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/vendor/quill/quill.snow.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/editor.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/dashboard.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/bootstrap-alerts.css') }}">
 </head>
@@ -45,9 +47,13 @@
                     <i class="fa-solid fa-building-columns" aria-hidden="true"></i>
                     <span>{{ __('Departments') }}</span>
                 </a>
-                <a class="nav-item {{ (request()->routeIs('teacher.topics.*') || $navSection === 'topics') ? 'active' : '' }}" href="{{ route('teacher.topics.index') }}" aria-label="Topics">
+                <a class="nav-item {{ ((request()->routeIs('teacher.topics.*') && !request()->routeIs('teacher.topics.lessons.*')) || $navSection === 'topics') ? 'active' : '' }}" href="{{ route('teacher.topics.index') }}" aria-label="Topics">
                     <i class="fa-solid fa-list-check" aria-hidden="true"></i>
                     <span>{{ __('Topics') }}</span>
+                </a>
+                <a class="nav-item {{ (request()->routeIs('teacher.lessons.*') || request()->routeIs('teacher.topics.lessons.*') || $navSection === 'lessons') ? 'active' : '' }}" href="{{ route('teacher.lessons.index') }}" aria-label="Lessons">
+                    <i class="fa-solid fa-book-open" aria-hidden="true"></i>
+                    <span>{{ __('Lessons') }}</span>
                 </a>
                 <a class="nav-item {{ (request()->routeIs('teacher.assignments.*') || $navSection === 'assignments') ? 'active' : '' }}" href="{{ route('teacher.assignments.index') }}" aria-label="Assignments">
                     <i class="fa-solid fa-file-lines" aria-hidden="true"></i>
@@ -87,6 +93,8 @@
     </div>
 
     <script src="{{ asset('assets/js/dashboard.js') }}"></script>
+    <script src="{{ asset('assets/vendor/quill/quill.js') }}"></script>
+    <script src="{{ asset('assets/js/editor.js') }}"></script>
     @stack('scripts')
 </body>
 </html>

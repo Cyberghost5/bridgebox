@@ -103,13 +103,13 @@
 
                     <div class="form-field form-field-full">
                         <label for="description">{{ ucfirst($type) }} {{ __('summary') }}</label>
-                        <textarea id="description" name="description" required>{{ old('description') }}</textarea>
+                        <textarea id="description" name="description" required data-wysiwyg>{{ old('description') }}</textarea>
                         @error('description')
                             <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
 
-                    <div class="form-actions">
+                    <div class="form-actions" style="margin-top: 10px;">
                         <button class="btn primary" type="submit">{{ __('Create') }} {{ ucfirst($type) }}</button>
                     </div>
                 </form>

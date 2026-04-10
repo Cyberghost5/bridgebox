@@ -105,6 +105,99 @@ class TeacherTopicLessonController extends Controller
             ]);
     }
 
+    public function show(Topic $topic, Lesson $lesson): View
+    {
+        $this->assertTopicAccess($topic);
+        $this->assertLessonTopic($topic, $lesson);
+
+        return view('teacher.topics.lessons.show', [
+            'topic' => $topic,
+            'lesson' => $lesson,
+        ]);
+    }
+
+    public function edit(Topic $topic, Lesson $lesson): View
+    {
+        $this->assertTopicAccess($topic);
+        $this->assertLessonTopic($topic, $lesson);
+
+        return view('teacher.topics.lessons.edit', [
+            'topic' => $topic,
+            'lesson' => $lesson,
+        ]);
+    }
+
+    public function update(Request $request, Topic $topic, Lesson $lesson): RedirectResponse
+    {
+        $this->assertTopicAccess($topic);
+        $this->assertLessonTopic($topic, $lesson);
+
+        $data = $request->validate([
+            'title' => 'required|string|max:191',
+            'content' => 'nullable|string',
+            'file' => 'nullable|file|max:51200|mimetypes:application/pdf,video/mp4,video/webm,video/ogg',
+            'remove_file' => 'nullable|boolean',
+        ]);
+
+        $content = trim((string) ($data['content'] ?? ''));
+        $file = $request->file('file');
+        $removeFile = (bool) ($data['remove_file'] ?? false);
+
+        // Must have either text content, an existing file (not being removed), or a new file
+        if ($content === '' && !$file && ($removeFile || !$lesson->file_path)) {
+            return back()
+                ->withErrors(['content' => 'Provide lesson text or upload a file.'])
+                ->withInput();
+        }
+
+        $filePath = $lesson->file_path;
+        $fileName = $lesson->file_name;
+        $fileType = $lesson->file_type;
+
+        if ($removeFile && !$file) {
+            // Delete the existing file
+            if ($lesson->file_path && Storage::disk('local')->exists($lesson->file_path)) {
+                Storage::disk('local')->delete($lesson->file_path);
+            }
+            $filePath = null;
+            $fileName = null;
+            $fileType = null;
+        }
+
+        if ($file) {
+            // Delete the old file first
+            if ($lesson->file_path && Storage::disk('local')->exists($lesson->file_path)) {
+                Storage::disk('local')->delete($lesson->file_path);
+            }
+
+            $originalName = $file->getClientOriginalName();
+            $extension = $file->getClientOriginalExtension();
+            $storedName = Str::uuid()->toString();
+            if ($extension !== '') {
+                $storedName .= '.' . $extension;
+            }
+
+            $filePath = $file->storeAs('lessons', $storedName, 'local');
+            $fileName = $originalName;
+            $fileType = $file->getClientMimeType();
+        }
+
+        $lesson->update([
+            'title' => $data['title'],
+            'content' => $content !== '' ? $content : null,
+            'file_path' => $filePath,
+            'file_name' => $fileName,
+            'file_type' => $fileType,
+        ]);
+
+        return redirect()
+            ->route('teacher.topics.lessons.index', $topic)
+            ->with([
+                'status' => 'success',
+                'message' => 'Lesson updated.',
+            ]);
+    }
+
     public function download(Topic $topic, Lesson $lesson)
     {
         $this->assertTopicAccess($topic);

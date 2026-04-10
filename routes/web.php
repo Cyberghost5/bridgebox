@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\AdminLogController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminSubjectController;
 use App\Http\Controllers\Admin\AdminTopicController;
+use App\Http\Controllers\Admin\AdminClassController;
 use App\Http\Controllers\Admin\AdminTopicLessonController;
 use App\Http\Controllers\Admin\AdminAssessmentController;
 use App\Http\Controllers\Admin\AdminAssessmentQuestionController;
@@ -23,6 +24,7 @@ use App\Http\Controllers\Teacher\TeacherDepartmentController;
 use App\Http\Controllers\Teacher\TeacherExportController;
 use App\Http\Controllers\Teacher\TeacherStudentController;
 use App\Http\Controllers\Teacher\TeacherSubjectController;
+use App\Http\Controllers\Teacher\TeacherLessonController;
 use App\Http\Controllers\Teacher\TeacherTopicController;
 use App\Http\Controllers\Teacher\TeacherTopicLessonController;
 use App\Http\Controllers\AuthController;
@@ -132,12 +134,12 @@ Route::prefix('dashboard/admin/classes')
     ->middleware('role:admin')
     ->name('admin.classes.')
     ->group(function () {
-        Route::get('/', [\App\Http\Controllers\Admin\AdminClassController::class, 'index'])->name('index');
-        Route::get('/create', [\App\Http\Controllers\Admin\AdminClassController::class, 'create'])->name('create');
-        Route::post('/', [\App\Http\Controllers\Admin\AdminClassController::class, 'store'])->name('store');
-        Route::get('/{class}/edit', [\App\Http\Controllers\Admin\AdminClassController::class, 'edit'])->name('edit');
-        Route::put('/{class}', [\App\Http\Controllers\Admin\AdminClassController::class, 'update'])->name('update');
-        Route::delete('/{class}', [\App\Http\Controllers\Admin\AdminClassController::class, 'destroy'])->name('delete');
+        Route::get('/', [AdminClassController::class, 'index'])->name('index');
+        Route::get('/create', [AdminClassController::class, 'create'])->name('create');
+        Route::post('/', [AdminClassController::class, 'store'])->name('store');
+        Route::get('/{class}/edit', [AdminClassController::class, 'edit'])->name('edit');
+        Route::put('/{class}', [AdminClassController::class, 'update'])->name('update');
+        Route::delete('/{class}', [AdminClassController::class, 'destroy'])->name('delete');
     });
 
 Route::prefix('dashboard/admin/subjects')
@@ -346,6 +348,8 @@ Route::prefix('dashboard/teacher')
             Route::delete('/{department}', [TeacherDepartmentController::class, 'destroy'])->name('delete');
         });
 
+        Route::get('lessons', [TeacherLessonController::class, 'index'])->name('lessons.index');
+
         Route::prefix('topics')->name('topics.')->group(function () {
             Route::get('/', [TeacherTopicController::class, 'index'])->name('index');
             Route::get('/by-subject', [TeacherTopicController::class, 'bySubject'])->name('by-subject');
@@ -360,6 +364,9 @@ Route::prefix('dashboard/teacher')
             Route::get('/{topic}/lessons', [TeacherTopicLessonController::class, 'index'])->name('lessons.index');
             Route::get('/{topic}/lessons/create', [TeacherTopicLessonController::class, 'create'])->name('lessons.create');
             Route::post('/{topic}/lessons', [TeacherTopicLessonController::class, 'store'])->name('lessons.store');
+            Route::get('/{topic}/lessons/{lesson}', [TeacherTopicLessonController::class, 'show'])->name('lessons.show');
+            Route::get('/{topic}/lessons/{lesson}/edit', [TeacherTopicLessonController::class, 'edit'])->name('lessons.edit');
+            Route::put('/{topic}/lessons/{lesson}', [TeacherTopicLessonController::class, 'update'])->name('lessons.update');
             Route::get('/{topic}/lessons/{lesson}/download', [TeacherTopicLessonController::class, 'download'])->name('lessons.download');
             Route::delete('/{topic}/lessons/{lesson}', [TeacherTopicLessonController::class, 'destroy'])->name('lessons.delete');
         });

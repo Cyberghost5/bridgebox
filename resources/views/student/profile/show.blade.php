@@ -160,7 +160,7 @@
     display: flex;
     align-items: center;
     gap: 24px;
-    padding: 28px 32px;
+    padding: 37px 32px;
     background: linear-gradient(135deg, #2e5bb7 0%, #3d6fd6 60%, #4fbf9b 100%);
     border-radius: 18px;
     color: #fff;

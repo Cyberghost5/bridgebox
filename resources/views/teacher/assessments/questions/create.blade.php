@@ -30,7 +30,7 @@
                     @csrf
                     <div class="form-field form-field-full">
                         <label for="prompt">{{ __('Question') }}</label>
-                        <textarea id="prompt" name="prompt" rows="4" required>{{ old('prompt') }}</textarea>
+                        <textarea id="prompt" name="prompt" rows="4" required data-wysiwyg>{{ old('prompt') }}</textarea>
                         @error('prompt')
                             <span class="form-error">{{ $message }}</span>
                         @enderror
